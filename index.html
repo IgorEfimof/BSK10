@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Магический квадрат Сидика Авгана</title>
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #6b8cbc;
+            --accent: #ff6b6b;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #28a745;
+            --warning: #ffc107;
+            --info: #17a2b8;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2a3a7c, #3a4a8c);
+            color: var(--light);
+            min-height: 100vh;
+            padding: 15px;
+            transition: background 0.5s ease;
+        }
+        
+        body.moon {
+            background: linear-gradient(135deg, #0f1a3a, #1a2a4a, #2a3a5a);
+        }
+        
+        body.full-moon {
+            background: linear-gradient(135deg, #2a1a5c, #3a2a6c, #4a3a7c);
+        }
+        
+        body.sun {
+            background: linear-gradient(135deg, #ff9a00, #ff6b00, #ff4500);
+        }
+        
+        body.eclipse {
+            background: linear-gradient(135deg, #1a0033, #330066, #4a0080);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .theme-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .theme-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .theme-btn.active {
+            border-color: var(--accent);
+            transform: scale(1.1);
+            box-shadow: 0 0 10px var(--accent);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            color: #fff;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .datetime-display {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .card-title i {
+            color: var(--accent);
+        }
+        
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .input-field {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            -webkit-appearance: none;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 0 2px var(--accent);
+        }
+        
+        button {
+            background: linear-gradient(135deg, var(--accent), #ff8e8e);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            width: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+        
+        .datetime-controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .datetime-control {
+            flex: 1;
+            min-width: 140px;
+        }
+        
+        .use-current-time {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .use-current-time input {
+            width: auto;
+        }
+        
+        .results {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .result-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .result-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 10px 0;
+            color: var(--accent);
+        }
+        
+        .result-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .magic-square {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 15px auto;
+            max-width: 320px;
+        }
+        
+        .square-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .square-cell.highlight {
+            background: rgba(255, 107, 107, 0.3);
+            border-color: var(--accent);
+            transform: scale(1.05);
+        }
+        
+        .recommendations {
+            margin-top: 20px;
+        }
+        
+        .recommendation-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .recommendation-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .recommendation-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        .analysis-text {
+            margin-top: 12px;
+            line-height: 1.5;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+        
+        .loader {
+            display: none;
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid var(--accent);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        .datetime-factor {
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        
+        .custom-keyboard {
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 10px;
+        }
+        
+        .keyboard-key {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .keyboard-key:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        
+        .keyboard-key.clear {
+            background: rgba(255, 107, 107, 0.7);
+        }
+        
+        .keyboard-key.done {
+            background: rgba(40, 167, 69, 0.7);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .input-group, .datetime-controls {
+                flex-direction: column;
+            }
+            
+            .input-field, .datetime-control {
+                min-width: 100%;
+            }
+            
+            h1 {
+                font-size: 1.6rem;
+            }
+            
+            .card-title {
+                font-size: 1.2rem;
+            }
+            
+            .magic-square {
+                max-width: 280px;
+            }
+            
+            .square-cell {
+                font-size: 1.1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .magic-square {
+                max-width: 240px;
+            }
+            
+            .square-cell {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="theme-switcher">
+            <div class="theme-btn active" data-theme="default" title="Стандартная тема">🌌</div>
+            <div class="theme-btn" data-theme="moon" title="Луна">🌙</div>
+            <div class="theme-btn" data-theme="full-moon" title="Полнолуние">🌕</div>
+            <div class="theme-btn" data-theme="sun" title="Солнце">☀️</div>
+            <div class="theme-btn" data-theme="eclipse" title="Затмение">🌑</div>
+        </div>
+        
+        <header>
+            <h1>Магический квадрат Сидика Авгана</h1>
+            <p class="subtitle">Прогнозирование с использованием текущей даты и времени</p>
+            <div class="datetime-display" id="currentDateTime">
+                <!-- Текущая дата и время будут обновляться JavaScript -->
+            </div>
+        </header>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <i>📊</i> Введите данные для прогноза
+            </h2>
+            
+            <div class="use-current-time">
+                <input type="checkbox" id="useCurrentTime" checked>
+                <label for="useCurrentTime">Использовать текущие дату и время</label>
+            </div>
+            
+            <div class="datetime-controls" id="datetimeControls" style="display: none;">
+                <div class="datetime-control">
+                    <label for="customDate">Дата</label>
+                    <input type="date" id="customDate">
+                </div>
+                <div class="datetime-control">
+                    <label for="customTime">Время</label>
+                    <input type="time" id="customTime">
+                </div>
+                <div class="datetime-control">
+                    <label for="timezone">Часовой пояс</label>
+                    <select id="timezone">
+                        <option value="0">UTC</option>
+                        <option value="3" selected>Москва (+3)</option>
+                        <option value="1">Калининград (+1)</option>
+                        <option value="4">Самара (+4)</option>
+                        <option value="5">Екатеринбург (+5)</option>
+                        <option value="7">Красноярск (+7)</option>
+                        <option value="8">Иркутск (+8)</option>
+                        <option value="9">Якутск (+9)</option>
+                        <option value="10">Владивосток (+10)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <div class="input-field">
+                    <label for="period1">Период 1</label>
+                    <input type="number" id="period1" placeholder="Введите значение" min="1" readonly>
+                </div>
+                <div class="input-field">
+                    <label for="period2">Период 2</label>
+                    <input type="number" id="period2" placeholder="Введите значение" min="1" readonly>
+                </div>
+                <div class="input-field">
+                    <label for="period3">Период 3</label>
+                    <input type="number" id="period3" placeholder="Введите значение" min="1" readonly>
+                </div>
+            </div>
+            
+            <div class="custom-keyboard" id="customKeyboard">
+                <button class="keyboard-key" data-value="1">1</button>
+                <button class="keyboard-key" data-value="2">2</button>
+                <button class="keyboard-key" data-value="3">3</button>
+                <button class="keyboard-key" data-value="4">4</button>
+                <button class="keyboard-key" data-value="5">5</button>
+                <button class="keyboard-key" data-value="6">6</button>
+                <button class="keyboard-key" data-value="7">7</button>
+                <button class="keyboard-key" data-value="8">8</button>
+                <button class="keyboard-key" data-value="9">9</button>
+                <button class="keyboard-key clear">Очистить</button>
+                <button class="keyboard-key" data-value="0">0</button>
+                <button class="keyboard-key done">Готово</button>
+            </div>
+            
+            <button id="calculateBtn">
+                <i>🔮</i> Рассчитать прогноз
+            </button>
+        </div>
+        
+        <div class="loader" id="loader">
+            <div class="spinner"></div>
+            <p>Выполняются магические расчеты...</p>
+        </div>
+        
+        <div class="results" id="results">
+            <div class="card">
+                <h2 class="card-title">
+                    <i>✨</i> Результаты прогноза
+                </h2>
+                <div class="results-grid">
+                    <div class="result-card">
+                        <div class="result-label">Четвертый период</div>
+                        <div class="result-value" id="period4Result">-</div>
+                        <div class="result-label">Нумерологический корень: <span id="period4Root">-</span></div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Общий тотал</div>
+                        <div class="result-value" id="totalResult">-</div>
+                        <div class="result-label">Нумерологический корень: <span id="totalRoot">-</span></div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Фактор даты/времени</div>
+                        <div class="result-value" id="datetimeFactor">-</div>
+                        <div class="result-label">Использовано: <span id="datetimeUsed">-</span></div>
+                    </div>
+                </div>
+                
+                <div class="datetime-factor">
+                    <h3>Влияние даты и времени на прогноз:</h3>
+                    <p id="datetimeAnalysis">-</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <i>🧊</i> Магический квадрат Сидика Авгана
+                </h2>
+                <div class="magic-square" id="magicSquare">
+                    <!-- Квадрат будет сгенерирован JavaScript -->
+                </div>
+            </div>
+            
+            <div class="card recommendations">
+                <h2 class="card-title">
+                    <i>🎯</i> Рекомендации для ставок
+                </h2>
+                <div>
+                    <h3>Четвертый период (корень: <span id="recPeriodRoot">-</span>)</h3>
+                    <div class="recommendation-list" id="periodRecommendations">
+                        <!-- Рекомендации будут сгенерированы JavaScript -->
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <h3>Общий тотал (корень: <span id="recTotalRoot">-</span>)</h3>
+                    <div class="recommendation-list" id="totalRecommendations">
+                        <!-- Рекомендации будут сгенерированы JavaScript -->
+                    </div>
+                </div>
+                <div class="analysis-text" id="analysisText">
+                    <!-- Анализ будет сгенерирован JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calculateBtn = document.getElementById('calculateBtn');
+            const loader = document.getElementById('loader');
+            const results = document.getElementById('results');
+            const useCurrentTime = document.getElementById('useCurrentTime');
+            const datetimeControls = document.getElementById('datetimeControls');
+            const currentDateTime = document.getElementById('currentDateTime');
+            const themeSwitcher = document.querySelector('.theme-switcher');
+            const customKeyboard = document.getElementById('customKeyboard');
+            const periodInputs = document.querySelectorAll('#period1, #period2, #period3');
+            
+            let currentInput = null;
+            
+            // Обновление текущей даты и времени каждую секунду
+            function updateCurrentDateTime() {
+                const now = new Date();
+                currentDateTime.textContent = now.toLocaleString('ru-RU', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            }
+            
+            updateCurrentDateTime();
+            setInterval(updateCurrentDateTime, 1000);
+            
+            // Обработчик переключения использования текущего времени
+            useCurrentTime.addEventListener('change', function() {
+                datetimeControls.style.display = this.checked ? 'none' : 'flex';
+            });
+            
+            // Установка текущей даты и времени по умолчанию
+            const now = new Date();
+            document.getElementById('customDate').valueAsDate = now;
+            document.getElementById('customTime').value = 
+                `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            // Обработчики для переключателей темы
+            themeSwitcher.addEventListener('click', function(e) {
+                if (e.target.classList.contains('theme-btn')) {
+                    // Убираем активный класс со всех кнопок
+                    document.querySelectorAll('.theme-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // Добавляем активный класс к нажатой кнопке
+                    e.target.classList.add('active');
+                    
+                    // Применяем выбранную тему
+                    const theme = e.target.getAttribute('data-theme');
+                    document.body.className = theme;
+                }
+            });
+            
+            // Обработчики для кастомной клавиатуры
+            periodInputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    currentInput = this;
+                    customKeyboard.style.display = 'grid';
+                });
+            });
+            
+            customKeyboard.addEventListener('click', function(e) {
+                if (e.target.classList.contains('keyboard-key')) {
+                    if (e.target.classList.contains('clear')) {
+                        if (currentInput) {
+                            currentInput.value = '';
+                        }
+                    } else if (e.target.classList.contains('done')) {
+                        customKeyboard.style.display = 'none';
+                        if (currentInput) {
+                            currentInput.blur();
+                        }
+                    } else {
+                        const value = e.target.getAttribute('data-value');
+                        if (currentInput) {
+                            currentInput.value += value;
+                        }
+                    }
+                }
+            });
+            
+            // Закрытие кастомной клавиатуры при клике вне ее
+            document.addEventListener('click', function(e) {
+                if (!customKeyboard.contains(e.target) && 
+                    !Array.from(periodInputs).some(input => input.contains(e.target))) {
+                    customKeyboard.style.display = 'none';
+                }
+            });
+            
+            calculateBtn.addEventListener('click', function() {
+                const period1 = parseInt(document.getElementById('period1').value);
+                const period2 = parseInt(document.getElementById('period2').value);
+                const period3 = parseInt(document.getElementById('period3').value);
+                
+                if (!period1 || !period2 || !period3) {
+                    alert('Пожалуйста, заполните все поля корректными числами');
+                    return;
+                }
+                
+                // Показать загрузку
+                loader.style.display = 'block';
+                results.style.display = 'none';
+                
+                // Имитация расчета
+                setTimeout(() => {
+                    calculatePredictions(period1, period2, period3);
+                    loader.style.display = 'none';
+                    results.style.display = 'block';
+                }, 1500);
+            });
+            
+            function getDateTimeFactors() {
+                let dateTime;
+                
+                if (useCurrentTime.checked) {
+                    // Используем время окончания игры (текущее время + 20 минут)
+                    dateTime = new Date();
+                    dateTime.setMinutes(dateTime.getMinutes() + 20);
+                } else {
+                    const dateStr = document.getElementById('customDate').value;
+                    const timeStr = document.getElementById('customTime').value;
+                    const timezone = parseInt(document.getElementById('timezone').value);
+                    
+                    dateTime = new Date(`${dateStr}T${timeStr}Z`);
+                    // Учитываем часовой пояс
+                    dateTime.setHours(dateTime.getHours() + timezone);
+                    
+                    // Добавляем 20 минут для времени окончания игры
+                    dateTime.setMinutes(dateTime.getMinutes() + 20);
+                }
+                
+                // Извлекаем компоненты даты и времени
+                const year = dateTime.getFullYear();
+                const month = dateTime.getMonth() + 1; // Месяцы от 1 до 12
+                const day = dateTime.getDate();
+                const hour = dateTime.getHours();
+                const minute = dateTime.getMinutes();
+                const second = dateTime.getSeconds();
+                const dayOfWeek = dateTime.getDay() === 0 ? 7 : dateTime.getDay(); // Воскресенье = 7
+                
+                // Вычисляем факторы даты и времени
+                const dateFactor = calculateNumerologicalRoot(day + month + year);
+                const timeFactor = calculateNumerologicalRoot(hour + minute + second);
+                const dayOfWeekFactor = dayOfWeek;
+                const combinedFactor = calculateNumerologicalRoot(dateFactor + timeFactor + dayOfWeekFactor);
+                
+                return {
+                    dateTime,
+                    dateFactor,
+                    timeFactor,
+                    dayOfWeekFactor,
+                    combinedFactor,
+                    components: { year, month, day, hour, minute, second, dayOfWeek }
+                };
+            }
+            
+            function calculatePredictions(period1, period2, period3) {
+                // Получаем факторы даты и времени
+                const datetimeFactors = getDateTimeFactors();
+                
+                // Вычисляем нумерологические корни периодов
+                const root1 = calculateNumerologicalRoot(period1);
+                const root2 = calculateNumerologicalRoot(period2);
+                const root3 = calculateNumerologicalRoot(period3);
+                
+                // Вычисляем четвертый период с учетом даты и времени
+                const period4 = calculateFourthPeriod(period1, period2, period3, root1, root2, root3, datetimeFactors);
+                const root4 = calculateNumerologicalRoot(period4);
+                
+                // Вычисляем общий тотал
+                const total = period1 + period2 + period3 + period4;
+                const totalRoot = calculateNumerologicalRoot(total);
+                
+                // Обновляем UI с результатами
+                document.getElementById('period4Result').textContent = period4;
+                document.getElementById('period4Root').textContent = root4;
+                document.getElementById('totalResult').textContent = total;
+                document.getElementById('totalRoot').textContent = totalRoot;
+                document.getElementById('datetimeFactor').textContent = datetimeFactors.combinedFactor;
+                document.getElementById('datetimeUsed').textContent = datetimeFactors.dateTime.toLocaleString('ru-RU');
+                
+                // Анализ влияния даты и времени
+                updateDateTimeAnalysis(datetimeFactors);
+                
+                // Генерируем магический квадрат
+                generateMagicSquare(root1, root2, root3, root4, datetimeFactors);
+                
+                // Генерируем рекомендации
+                generateRecommendations(period4, total, root4, totalRoot);
+                
+                // Генерируем анализ
+                generateAnalysis(root1, root2, root3, root4, totalRoot, datetimeFactors);
+            }
+            
+            function calculateNumerologicalRoot(number) {
+                let current = number;
+                while (current > 9) {
+                    current = current.toString().split('').reduce((sum, digit) => sum + parseInt(digit), 0);
+                }
+                return current;
+            }
+            
+            function calculateFourthPeriod(period1, period2, period3, root1, root2, root3, datetimeFactors) {
+                // Метод Сидика Авгана для вычисления четвертого периода с учетом даты и времени
+                const mean = Math.round((period1 + period2 + period3) / 3);
+                const sumRoots = root1 + root2 + root3;
+                
+                // Учитываем фактор даты и времени в расчете
+                let root4;
+                const adjustedSum = sumRoots + datetimeFactors.combinedFactor;
+                if (adjustedSum % 9 === 0) {
+                    root4 = 9;
+                } else {
+                    root4 = 9 - (adjustedSum % 9);
+                }
+                
+                // Находим ближайшее число с нужным корнем
+                return findNearestWithRoot(mean, root4);
+            }
+            
+            function findNearestWithRoot(target, targetRoot) {
+                let upper = target;
+                let lower = target;
+                
+                while (true) {
+                    if (calculateNumerologicalRoot(upper) === targetRoot) {
+                        return upper;
+                    }
+                    
+                    if (lower > 0 && calculateNumerologicalRoot(lower) === targetRoot) {
+                        return lower;
+                    }
+                    
+                    upper++;
+                    lower--;
+                }
+            }
+            
+            function updateDateTimeAnalysis(datetimeFactors) {
+                const analysisElement = document.getElementById('datetimeAnalysis');
+                const { dateFactor, timeFactor, dayOfWeekFactor, combinedFactor, components } = datetimeFactors;
+                
+                const dayNames = ['', 'понедельник', 'вторник', 'среду', 'четверг', 'пятницу', 'субботу', 'воскресенье'];
+                const monthNames = [
+                    '', 'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+                ];
+                
+                let analysis = `Расчет выполнен для времени окончания игры (${components.day} ${monthNames[components.month]} ${components.year} года, `;
+                analysis += `в ${components.hour.toString().padStart(2, '0')}:${components.minute.toString().padStart(2, '0')}, ${dayNames[components.dayOfWeek]}). `;
+                analysis += `Фактор даты: ${dateFactor}, фактор времени: ${timeFactor}, фактор дня недели: ${dayOfWeekFactor}. `;
+                analysis += `Комбинированный фактор: ${combinedFactor}. `;
+                
+                if (combinedFactor === 7) {
+                    analysis += `Это благоприятный знак - число 7 связано с удачей в системе Сидика Авгана.`;
+                } else if (combinedFactor === 8) {
+                    analysis += `Это указывает на потенциал изобилия и успеха.`;
+                } else if (combinedFactor === 9) {
+                    analysis += `Это знак завершения и новых начинаний.`;
+                }
+                
+                analysisElement.textContent = analysis;
+            }
+            
+            function generateMagicSquare(root1, root2, root3, root4, datetimeFactors) {
+                const magicSquare = document.getElementById('magicSquare');
+                magicSquare.innerHTML = '';
+                
+                // Магический квадрат Сидика Авгана 4x4
+                const sidikAvganSquare = [
+                    [16, 3, 2, 13],
+                    [5, 10, 11, 8],
+                    [9, 6, 7, 12],
+                    [4, 15, 14, 1]
+                ];
+                
+                // Адаптируем квадрат с учетом корней периодов и фактора даты/времени
+                for (let i = 0; i < 4; i++) {
+                    for (let j = 0; j < 4; j++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'square-cell';
+                        
+                        // Модифицируем значения на основе факторов
+                        let value = sidikAvganSquare[i][j];
+                        if (i === 0 && j === 0) value += root1 - 1;
+                        if (i === 0 && j === 3) value += root2 - 1;
+                        if (i === 3 && j === 0) value += root3 - 1;
+                        if (i === 3 && j === 3) value += root4 - 1;
+                        
+                        // Центральные ячейки корректируем на основе фактора даты/времени
+                        if ((i === 1 && j === 1) || (i === 2 && j === 2)) {
+                            value += datetimeFactors.combinedFactor;
+                        }
+                        
+                        // Нормализуем значение
+                        while (value > 16) value -= 16;
+                        while (value < 1) value += 16;
+                        
+                        cell.textContent = value;
+                        
+                        // Подсвечиваем ячейки, связанные с периодами
+                        if ((i === 0 && j === 0) || (i === 0 && j === 3) || 
+                            (i === 3 && j === 0) || (i === 3 && j === 3)) {
+                            cell.classList.add('highlight');
+                        }
+                        
+                        magicSquare.appendChild(cell);
+                    }
+                }
+            }
+            
+            function generateRecommendations(period4, total, root4, totalRoot) {
+                document.getElementById('recPeriodRoot').textContent = root4;
+                document.getElementById('recTotalRoot').textContent = totalRoot;
+                
+                // Рекомендации для четвертого периода
+                const periodRecs = document.getElementById('periodRecommendations');
+                periodRecs.innerHTML = '';
+                
+                const periodNumbers = findNumbersWithRoot(root4, period4, 10);
+                periodNumbers.forEach(num => {
+                    const item = document.createElement('div');
+                    item.className = 'recommendation-item';
+                    item.textContent = num;
+                    periodRecs.appendChild(item);
+                });
+                
+                // Рекомендации для общего тотала
+                const totalRecs = document.getElementById('totalRecommendations');
+                totalRecs.innerHTML = '';
+                
+                const totalNumbers = findNumbersWithRoot(totalRoot, total, 10);
+                totalNumbers.forEach(num => {
+                    const item = document.createElement('div');
+                    item.className = 'recommendation-item';
+                    item.textContent = num;
+                    totalRecs.appendChild(item);
+                });
+            }
+            
+            function findNumbersWithRoot(targetRoot, nearValue, count) {
+                const numbers = [];
+                let current = nearValue;
+                
+                while (numbers.length < count) {
+                    if (calculateNumerologicalRoot(current) === targetRoot && current > 0) {
+                        numbers.push(current);
+                    }
+                    
+                    if (numbers.length < count) {
+                        const opposite = nearValue - (current - nearValue);
+                        if (calculateNumerologicalRoot(opposite) === targetRoot && opposite > 0) {
+                            numbers.push(opposite);
+                        }
+                    }
+                    
+                    current++;
+                    
+                    if (current > nearValue + 100) break;
+                }
+                
+                return [...new Set(numbers)].sort((a, b) => a - b).slice(0, count);
+            }
+            
+            function generateAnalysis(root1, root2, root3, root4, totalRoot, datetimeFactors) {
+                const analysisText = document.getElementById('analysisText');
+                
+                let analysis = '';
+                
+                // Анализ четвертого периода
+                analysis += `<p><strong>Четвертый период имеет корень ${root4}:</strong> ${getRootMeaning(root4)}</p>`;
+                
+                // Анализ общего тотала
+                analysis += `<p><strong>Общий тотал имеет корень ${totalRoot}:</strong> ${getRootMeaning(totalRoot)}</p>`;
+                
+                // Анализ влияния даты и времени
+                analysis += `<p><strong>Влияние даты/времени:</strong> Фактор ${datetimeFactors.combinedFactor} (${getRootMeaning(datetimeFactors.combinedFactor)})</p>`;
+                
+                // Специальные комбинации
+                if (totalRoot === 7) {
+                    analysis += `<p>✨ <strong>Особый знак:</strong> Тотал имеет корень 7 - число удачи и мистики в системе Сидика Авгана</p>`;
+                }
+                
+                if ([root1, root2, root3, root4].filter(root => root === 8).length >= 2) {
+                    analysis += `<p>✨ <strong>Благоприятный знак:</strong> Несколько периодов имеют корень 8 - число изобилия и успеха</p>`;
+                }
+                
+                if ([3, 6, 9].includes(totalRoot)) {
+                    analysis += `<p>✨ <strong>Гармоничная комбинация:</strong> Тотал имеет "магический" корень ${totalRoot}</p>`;
+                }
+                
+                if (datetimeFactors.combinedFactor === root4) {
+                    analysis += `<p>✨ <strong>Синхронность:</strong> Фактор даты/времени совпадает с корнем четвертого периода</p>`;
+                }
+                
+                analysisText.innerHTML = analysis;
+            }
+            
+            function getRootMeaning(root) {
+                const meanings = {
+                    1: "инициация, начало, лидерство",
+                    2: "баланс, партнерство, гармония", 
+                    3: "творчество, рост, самовыражение",
+                    4: "стабильность, порядок, практичность",
+                    5: "изменения, свобода, адаптивность",
+                    6: "ответственность, забота, гармония",
+                    7: "анализ, мудрость, духовность", 
+                    8: "изобилие, успех, материальные блага",
+                    9: "завершение, мудрость, гуманизм"
+                };
+                
+                return meanings[root] || "нейтральная энергия";
+            }
+        });
+    </script>
+</body>
+</html>
