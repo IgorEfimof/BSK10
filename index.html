@@ -115,6 +115,15 @@
             display: inline-block;
         }
         
+        .game-timing {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        
         .card {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
@@ -432,9 +441,12 @@
         
         <header>
             <h1>Магический квадрат Сидика Авгана</h1>
-            <p class="subtitle">Прогнозирование с использованием текущей даты и времени</p>
+            <p class="subtitle">Прогнозирование кибербаскетбола с учетом времени четвертого периода</p>
             <div class="datetime-display" id="currentDateTime">
                 <!-- Текущая дата и время будут обновляться JavaScript -->
+            </div>
+            <div class="game-timing" id="gameTiming">
+                <!-- Время четвертого периода будет обновляться JavaScript -->
             </div>
         </header>
         
@@ -532,7 +544,7 @@
                     <div class="result-card">
                         <div class="result-label">Фактор даты/времени</div>
                         <div class="result-value" id="datetimeFactor">-</div>
-                        <div class="result-label">Использовано: <span id="datetimeUsed">-</span></div>
+                        <div class="result-label">Время окончания: <span id="datetimeUsed">-</span></div>
                     </div>
                 </div>
                 
@@ -582,6 +594,7 @@
             const useCurrentTime = document.getElementById('useCurrentTime');
             const datetimeControls = document.getElementById('datetimeControls');
             const currentDateTime = document.getElementById('currentDateTime');
+            const gameTiming = document.getElementById('gameTiming');
             const themeSwitcher = document.querySelector('.theme-switcher');
             const customKeyboard = document.getElementById('customKeyboard');
             const periodInputs = document.querySelectorAll('#period1, #period2, #period3');
@@ -600,6 +613,12 @@
                     minute: '2-digit',
                     second: '2-digit'
                 });
+                
+                // Обновляем информацию о времени четвертого периода
+                const period4Start = new Date(now);
+                const period4End = new Date(period4Start.getTime() + 5 * 60 * 1000); // +5 минут
+                
+                gameTiming.innerHTML = `Четвертый период: ${period4Start.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})} - ${period4End.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}`;
             }
             
             updateCurrentDateTime();
@@ -695,9 +714,8 @@
                 let dateTime;
                 
                 if (useCurrentTime.checked) {
-                    // Используем время окончания игры (текущее время + 20 минут)
+                    // Используем время начала четвертого периода (текущее время)
                     dateTime = new Date();
-                    dateTime.setMinutes(dateTime.getMinutes() + 20);
                 } else {
                     const dateStr = document.getElementById('customDate').value;
                     const timeStr = document.getElementById('customTime').value;
@@ -706,9 +724,6 @@
                     dateTime = new Date(`${dateStr}T${timeStr}Z`);
                     // Учитываем часовой пояс
                     dateTime.setHours(dateTime.getHours() + timezone);
-                    
-                    // Добавляем 20 минут для времени окончания игры
-                    dateTime.setMinutes(dateTime.getMinutes() + 20);
                 }
                 
                 // Извлекаем компоненты даты и времени
@@ -793,7 +808,7 @@
                 if (adjustedSum % 9 === 0) {
                     root4 = 9;
                 } else {
-                    root4 = 9 - (adjustedSum % 9);
+                    root4 = adjustedSum % 9;
                 }
                 
                 // Находим ближайшее число с нужным корнем
@@ -828,7 +843,7 @@
                     'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
                 ];
                 
-                let analysis = `Расчет выполнен для времени окончания игры (${components.day} ${monthNames[components.month]} ${components.year} года, `;
+                let analysis = `Расчет выполнен для начала четвертого периода (${components.day} ${monthNames[components.month]} ${components.year} года, `;
                 analysis += `в ${components.hour.toString().padStart(2, '0')}:${components.minute.toString().padStart(2, '0')}, ${dayNames[components.dayOfWeek]}). `;
                 analysis += `Фактор даты: ${dateFactor}, фактор времени: ${timeFactor}, фактор дня недели: ${dayOfWeekFactor}. `;
                 analysis += `Комбинированный фактор: ${combinedFactor}. `;
