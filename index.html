@@ -2,24 +2,11 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon211.png">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="BSK10">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Магический квадрат Сидика Авгана</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Продвинутый анализатор ставок TT PRO v7.0 AI</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --primary: #4a6fa5;
-            --secondary: #6b8cbc;
-            --accent: #ff6b6b;
-            --light: #f8f9fa;
-            --dark: #343a40;
-            --success: #28a745;
-            --warning: #ffc107;
-            --info: #17a2b8;
-        }
-        
         * {
             margin: 0;
             padding: 0;
@@ -28,987 +15,1562 @@
             -webkit-tap-highlight-color: transparent;
         }
         
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #e74c3c;
+            --background: linear-gradient(135deg, #1a2a6c, #2c3e50, #4a235a);
+            --container-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #2c3e50;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --positive-color: #27ae60;
+            --negative-color: #e74c3c;
+            --neutral-color: #3498db;
+            --ai-color: #9b59b6;
+            --training-color: #f39c12;
+        }
+        
         body {
-            background: linear-gradient(135deg, #1a2a6c, #2a3a7c, #3a4a8c);
-            color: var(--light);
+            background: var(--background);
+            color: var(--text-color);
             min-height: 100vh;
-            padding: 15px;
-            transition: background 0.5s ease;
-        }
-        
-        body.moon {
-            background: linear-gradient(135deg, #0f1a3a, #1a2a4a, #2a3a5a);
-        }
-        
-        body.full-moon {
-            background: linear-gradient(135deg, #2a1a5c, #3a2a6c, #4a3a7c);
-        }
-        
-        body.sun {
-            background: linear-gradient(135deg, #ff9a00, #ff6b00, #ff4500);
-        }
-        
-        body.eclipse {
-            background: linear-gradient(135deg, #1a0033, #330066, #4a0080);
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .theme-switcher {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .theme-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .theme-btn.active {
-            border-color: var(--accent);
-            transform: scale(1.1);
-            box-shadow: 0 0 10px var(--accent);
+            width: 100%;
+            max-width: 100%;
+            background: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
         }
         
         header {
-            text-align: center;
-            margin-bottom: 20px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            color: white;
             padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
         }
         
         h1 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             margin-bottom: 8px;
-            color: #fff;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
         
-        .subtitle {
-            font-size: 1rem;
-            opacity: 0.9;
+        .main-content {
+            padding: 15px;
         }
         
-        .datetime-display {
-            margin-top: 10px;
-            font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 8px 12px;
-            border-radius: 8px;
-            display: inline-block;
-        }
-        
-        .game-timing {
-            margin-top: 10px;
-            font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 8px 12px;
-            border-radius: 8px;
-            display: inline-block;
-        }
-        
-        .card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .card-title {
-            font-size: 1.3rem;
+        .section-title {
+            color: var(--primary-color);
             margin-bottom: 15px;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .card-title i {
-            color: var(--accent);
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--primary-color);
         }
         
         .input-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-        
-        .input-field {
-            flex: 1;
-            min-width: 150px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-        
-        input, select {
-            width: 100%;
-            padding: 10px 12px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            -webkit-appearance: none;
-        }
-        
-        input:focus, select:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.25);
-            box-shadow: 0 0 0 2px var(--accent);
-        }
-        
-        button {
-            background: linear-gradient(135deg, var(--accent), #ff8e8e);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
-            width: 100%;
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
-        }
-        
-        .datetime-controls {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .datetime-control {
-            flex: 1;
-            min-width: 140px;
-        }
-        
-        .use-current-time {
-            display: flex;
-            align-items: center;
-            gap: 8px;
             margin-bottom: 12px;
         }
         
-        .use-current-time input {
-            width: auto;
+        .input-label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
         }
         
-        .results {
-            display: none;
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background: white;
+            color: var(--text-color);
+            font-size: 16px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .analyze-btn {
+            background: var(--positive-color);
+            color: white;
+        }
+        
+        .clear-btn {
+            background: var(--negative-color);
+            color: white;
+        }
+        
+        .ai-btn {
+            background: var(--ai-color);
+            color: white;
+        }
+        
+        .training-btn {
+            background: var(--training-color);
+            color: white;
+        }
+        
+        .results-section {
             margin-top: 20px;
+            padding: 15px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
-        .results-grid {
+        .result-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
         }
         
         .result-card {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .result-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
         }
         
         .result-value {
-            font-size: 2rem;
-            font-weight: 700;
-            margin: 10px 0;
-            color: var(--accent);
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
         }
         
-        .result-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
+        .positive { color: var(--positive-color); }
+        .negative { color: var(--negative-color); }
+        .neutral { color: var(--neutral-color); }
+        
+        .recommendation {
+            margin-top: 20px;
+            padding: 15px;
+            background: linear-gradient(90deg, var(--positive-color), #2ecc71);
+            color: white;
+            border-radius: 8px;
+            text-align: center;
         }
         
-        .magic-square {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin: 15px auto;
-            max-width: 320px;
+        .recommendation.negative {
+            background: linear-gradient(90deg, var(--negative-color), #c0392b);
         }
         
-        .square-cell {
-            aspect-ratio: 1;
+        .confidence {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 6px;
-            font-size: 1.3rem;
-            font-weight: 700;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
+            margin-top: 8px;
         }
         
-        .square-cell.highlight {
-            background: rgba(255, 107, 107, 0.3);
-            border-color: var(--accent);
-            transform: scale(1.05);
+        .confidence-bar {
+            width: 100px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0 8px;
         }
         
-        .recommendations {
-            margin-top: 20px;
+        .confidence-fill {
+            height: 100%;
+            background: white;
+            border-radius: 4px;
         }
         
-        .recommendation-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 8px;
-            margin-top: 10px;
-        }
-        
-        .recommendation-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 8px;
-            border-radius: 6px;
-            text-align: center;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-        
-        .recommendation-item:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-3px);
-        }
-        
-        .analysis-text {
-            margin-top: 12px;
-            line-height: 1.5;
-            opacity: 0.9;
-            font-size: 0.9rem;
-        }
-        
-        .loader {
-            display: none;
-            text-align: center;
-            margin: 15px 0;
-        }
-        
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 4px solid var(--accent);
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        
-        .datetime-factor {
-            margin-top: 12px;
+        .ai-model-status {
+            margin-top: 15px;
             padding: 12px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(155, 89, 182, 0.1);
             border-radius: 8px;
         }
         
-        .custom-keyboard {
-            display: none;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
+        .ai-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
             margin-top: 10px;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 12px;
-            border-radius: 10px;
         }
         
-        .keyboard-key {
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.15);
-            border: none;
+        .ai-stat-card {
+            background: white;
+            padding: 10px;
             border-radius: 6px;
-            color: white;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            text-align: center;
         }
         
-        .keyboard-key:hover {
-            background: rgba(255, 255, 255, 0.25);
+        .ai-stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--ai-color);
         }
         
-        .keyboard-key.clear {
-            background: rgba(255, 107, 107, 0.7);
+        .ai-stat-label {
+            font-size: 0.8rem;
+            color: var(--text-color);
         }
         
-        .keyboard-key.done {
-            background: rgba(40, 167, 69, 0.7);
+        .training-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(243, 156, 18, 0.1);
+            border-radius: 8px;
+        }
+        
+        .training-progress {
+            margin-top: 10px;
+            height: 10px;
+            background: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .training-progress-bar {
+            height: 100%;
+            background: var(--training-color);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .chart-container {
+            margin-top: 20px;
+            height: 200px;
+            position: relative;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
         }
         
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .status-message {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .status-success {
+            background-color: rgba(39, 174, 96, 0.2);
+            color: var(--positive-color);
+        }
+        
+        .status-error {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--negative-color);
+        }
+        
+        .status-info {
+            background-color: rgba(52, 152, 219, 0.2);
+            color: var(--neutral-color);
+        }
+        
+        .feedback-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 8px;
+        }
+        
+        .history-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(46, 204, 113, 0.1);
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .history-list {
+            margin-top: 10px;
+        }
+        
+        .history-item {
+            background: white;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .history-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            font-size: 0.8rem;
+            color: #666;
         }
         
         @media (max-width: 768px) {
-            .input-group, .datetime-controls {
-                flex-direction: column;
-            }
-            
-            .input-field, .datetime-control {
-                min-width: 100%;
-            }
-            
-            h1 {
-                font-size: 1.6rem;
-            }
-            
-            .card-title {
-                font-size: 1.2rem;
-            }
-            
-            .magic-square {
-                max-width: 280px;
-            }
-            
-            .square-cell {
-                font-size: 1.1rem;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            body {
-                padding: 10px;
-            }
-            
-            .card {
-                padding: 15px;
-            }
-            
-            .results-grid {
+            .result-grid {
                 grid-template-columns: 1fr;
             }
             
-            .magic-square {
-                max-width: 240px;
+            .ai-stats {
+                grid-template-columns: 1fr;
             }
             
-            .square-cell {
-                font-size: 1rem;
+            .history-details {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="theme-switcher">
-            <div class="theme-btn active" data-theme="default" title="Стандартная тема">🌌</div>
-            <div class="theme-btn" data-theme="moon" title="Луна">🌙</div>
-            <div class="theme-btn" data-theme="full-moon" title="Полнолуние">🌕</div>
-            <div class="theme-btn" data-theme="sun" title="Солнце">☀️</div>
-            <div class="theme-btn" data-theme="eclipse" title="Затмение">🌑</div>
-        </div>
-        
         <header>
-            <h1>Магический квадрат Сидика Авгана</h1>
-            <p class="subtitle">Прогнозирование кибербаскетбола с учетом времени четвертого периода</p>
-            <div class="datetime-display" id="currentDateTime">
-                <!-- Текущая дата и время будут обновляться JavaScript -->
-            </div>
-            <div class="game-timing" id="gameTiming">
-                <!-- Время четвертого периода будет обновляться JavaScript -->
-            </div>
+            <h1>Продвинутый анализатор ставок TT PRO v7.0 AI</h1>
+            <div class="subtitle">Реальная нейросеть с глубоким обучением</div>
         </header>
         
-        <div class="card">
-            <h2 class="card-title">
-                <i>📊</i> Введите данные для прогноза
-            </h2>
-            
-            <div class="use-current-time">
-                <input type="checkbox" id="useCurrentTime" checked>
-                <label for="useCurrentTime">Использовать текущие дату и время</label>
-            </div>
-            
-            <div class="datetime-controls" id="datetimeControls" style="display: none;">
-                <div class="datetime-control">
-                    <label for="customDate">Дата</label>
-                    <input type="date" id="customDate">
-                </div>
-                <div class="datetime-control">
-                    <label for="customTime">Время</label>
-                    <input type="time" id="customTime">
-                </div>
-                <div class="datetime-control">
-                    <label for="timezone">Часовой пояс</label>
-                    <select id="timezone">
-                        <option value="0">UTC</option>
-                        <option value="3" selected>Москва (+3)</option>
-                        <option value="1">Калининград (+1)</option>
-                        <option value="4">Самара (+4)</option>
-                        <option value="5">Екатеринбург (+5)</option>
-                        <option value="7">Красноярск (+7)</option>
-                        <option value="8">Иркутск (+8)</option>
-                        <option value="9">Якутск (+9)</option>
-                        <option value="10">Владивосток (+10)</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="input-group">
-                <div class="input-field">
-                    <label for="period1">Период 1</label>
-                    <input type="number" id="period1" placeholder="Введите значение" min="1" readonly>
-                </div>
-                <div class="input-field">
-                    <label for="period2">Период 2</label>
-                    <input type="number" id="period2" placeholder="Введите значение" min="1" readonly>
-                </div>
-                <div class="input-field">
-                    <label for="period3">Период 3</label>
-                    <input type="number" id="period3" placeholder="Введите значение" min="1" readonly>
-                </div>
-            </div>
-            
-            <div class="custom-keyboard" id="customKeyboard">
-                <button class="keyboard-key" data-value="1">1</button>
-                <button class="keyboard-key" data-value="2">2</button>
-                <button class="keyboard-key" data-value="3">3</button>
-                <button class="keyboard-key" data-value="4">4</button>
-                <button class="keyboard-key" data-value="5">5</button>
-                <button class="keyboard-key" data-value="6">6</button>
-                <button class="keyboard-key" data-value="7">7</button>
-                <button class="keyboard-key" data-value="8">8</button>
-                <button class="keyboard-key" data-value="9">9</button>
-                <button class="keyboard-key clear">Очистить</button>
-                <button class="keyboard-key" data-value="0">0</button>
-                <button class="keyboard-key done">Готово</button>
-            </div>
-            
-            <button id="calculateBtn">
-                <i>🔮</i> Рассчитать прогноз
-            </button>
-        </div>
-        
-        <div class="loader" id="loader">
-            <div class="spinner"></div>
-            <p>Выполняются магические расчеты...</p>
-        </div>
-        
-        <div class="results" id="results">
-            <div class="card">
-                <h2 class="card-title">
-                    <i>✨</i> Результаты прогноза
-                </h2>
-                <div class="results-grid">
-                    <div class="result-card">
-                        <div class="result-label">Четвертый период</div>
-                        <div class="result-value" id="period4Result">-</div>
-                        <div class="result-label">Нумерологический корень: <span id="period4Root">-</span></div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-label">Общий тотал</div>
-                        <div class="result-value" id="totalResult">-</div>
-                        <div class="result-label">Нумерологический корень: <span id="totalRoot">-</span></div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-label">Фактор даты/времени</div>
-                        <div class="result-value" id="datetimeFactor">-</div>
-                        <div class="result-label">Время окончания: <span id="datetimeUsed">-</span></div>
+        <div class="main-content">
+            <div class="input-section">
+                <h2 class="section-title">Ввод данных матча</h2>
+                
+                <div class="input-group">
+                    <label class="input-label">Счет (Команда 1 : Команда 2)</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" class="input-field" id="score1" placeholder="100" value="45">
+                        <span style="display: flex; align-items: center;">:</span>
+                        <input type="number" class="input-field" id="score2" placeholder="92" value="38">
                     </div>
                 </div>
                 
-                <div class="datetime-factor">
-                    <h3>Влияние даты и времени на прогноз:</h3>
-                    <p id="datetimeAnalysis">-</p>
+                <div class="input-group">
+                    <label class="input-label">Период (четверть)</label>
+                    <input type="number" class="input-field" id="period" placeholder="1-4" min="1" max="4" value="2">
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Время прошло в четверти (мин:сек)</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" class="input-field" id="minutes" placeholder="01" min="0" max="12" value="5">
+                        <span style="display: flex; align-items: center;">:</span>
+                        <input type="number" class="input-field" id="seconds" placeholder="27" min="0" max="59" value="30">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Тотал</label>
+                    <input type="number" class="input-field" id="total-line" placeholder="237.5" step="0.5" value="185.5">
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Тип тотала</label>
+                    <select class="input-field" id="total-type">
+                        <option value="over">ТБ (Тотал больше)</option>
+                        <option value="under">ТМ (Тотал меньше)</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Лига</label>
+                    <select class="input-field" id="league-type">
+                        <option value="nba">NBA (4×12 мин)</option>
+                        <option value="fib">ФИБА (4×10 мин)</option>
+                        <option value="cyber">Кибербаскетбол (4×5 мин)</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Разница в счете</label>
+                    <input type="number" class="input-field" id="score-diff" placeholder="Авторасчет" readonly>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Домашняя команда</label>
+                    <select class="input-field" id="home-team">
+                        <option value="0.5">Нейтральная площадка</option>
+                        <option value="1">Команда 1 дома</option>
+                        <option value="0">Команда 2 дома</option>
+                    </select>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn analyze-btn" id="analyze-btn">Анализировать</button>
+                    <button class="action-btn ai-btn" id="ai-analyze">ИИ Анализ</button>
+                    <button class="action-btn training-btn" id="train-btn">Обучить ИИ</button>
+                    <button class="action-btn clear-btn" id="clear-btn">Очистить</button>
                 </div>
             </div>
             
-            <div class="card">
-                <h2 class="card-title">
-                    <i>🧊</i> Магический квадрат Сидика Авгана
-                </h2>
-                <div class="magic-square" id="magicSquare">
-                    <!-- Квадрат будет сгенерирован JavaScript -->
-                </div>
-            </div>
-            
-            <div class="card recommendations">
-                <h2 class="card-title">
-                    <i>🎯</i> Рекомендации для ставок
-                </h2>
-                <div>
-                    <h3>Четвертый период (корень: <span id="recPeriodRoot">-</span>)</h3>
-                    <div class="recommendation-list" id="periodRecommendations">
-                        <!-- Рекомендации будут сгенерированы JavaScript -->
+            <div class="results-section">
+                <h2 class="section-title">Результаты анализа</h2>
+                <div id="status-message"></div>
+                
+                <div class="result-grid">
+                    <div class="result-card">
+                        <div class="result-title">Ожидаемый тотал</div>
+                        <div class="result-value neutral" id="predicted-total">--</div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="result-title">Темп игры</div>
+                        <div class="result-value neutral" id="predicted-pace">--</div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="result-title">Точность ИИ</div>
+                        <div class="result-value neutral" id="ai-accuracy">--</div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="result-title">Уверенность</div>
+                        <div class="result-value neutral" id="confidence">--</div>
                     </div>
                 </div>
-                <div style="margin-top: 20px;">
-                    <h3>Общий тотал (корень: <span id="recTotalRoot">-</span>)</h3>
-                    <div class="recommendation-list" id="totalRecommendations">
-                        <!-- Рекомендации будут сгенерированы JavaScript -->
+                
+                <div class="recommendation" id="recommendation">
+                    <div class="recommendation-title" id="recommendation-title">Анализ в процессе...</div>
+                    <div class="confidence">
+                        <span>Уверенность:</span>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="confidence-bar" style="width: 0%"></div>
+                        </div>
+                        <span id="confidence-value">0%</span>
                     </div>
                 </div>
-                <div class="analysis-text" id="analysisText">
-                    <!-- Анализ будет сгенерирован JavaScript -->
+                
+                <!-- НОВЫЙ РАЗДЕЛ: Сохранение результатов для обучения ИИ -->
+                <div class="feedback-section">
+                    <h3>Сохранение результатов для обучения ИИ</h3>
+                    <div class="input-group">
+                        <label class="input-label">Фактический тотал матча (для обучения ИИ)</label>
+                        <input type="number" class="input-field" id="actual-total" placeholder="Введите реальный тотал матча">
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn ai-btn" id="save-result">Сохранить результат</button>
+                        <button class="action-btn training-btn" id="train-with-saved">Обучить на сохраненных</button>
+                    </div>
+                    <div id="save-status"></div>
+                </div>
+                
+                <!-- НОВЫЙ РАЗДЕЛ: История сохраненных результатов -->
+                <div class="history-section">
+                    <h3>История сохраненных результатов</h3>
+                    <div class="action-buttons">
+                        <button class="action-btn training-btn" id="clear-history">Очистить историю</button>
+                    </div>
+                    <div class="history-list" id="history-list">
+                        <!-- История будет загружаться здесь -->
+                    </div>
+                </div>
+                
+                <div class="training-section">
+                    <h3>Обучение нейросети</h3>
+                    <div class="action-buttons">
+                        <button class="action-btn training-btn" id="generate-data">Сгенерировать данные</button>
+                        <button class="action-btn training-btn" id="validate-model">Проверить модель</button>
+                    </div>
+                    <div class="training-progress">
+                        <div class="training-progress-bar" id="training-progress"></div>
+                    </div>
+                    <div id="training-status"></div>
+                    
+                    <div class="chart-container">
+                        <canvas id="training-chart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="ai-model-status">
+                    <h3>Статус нейросети</h3>
+                    <div class="ai-stats">
+                        <div class="ai-stat-card">
+                            <div class="ai-stat-value" id="training-count">0</div>
+                            <div class="ai-stat-label">Сессий обучения</div>
+                        </div>
+                        <div class="ai-stat-card">
+                            <div class="ai-stat-value" id="data-points">0</div>
+                            <div class="ai-stat-label">Записей в базе</div>
+                        </div>
+                        <div class="ai-stat-card">
+                            <div class="ai-stat-value" id="model-accuracy">0%</div>
+                            <div class="ai-stat-label">Точность модели</div>
+                        </div>
+                        <div class="ai-stat-card">
+                            <div class="ai-stat-value" id="avg-error">0</div>
+                            <div class="ai-stat-label">Средняя ошибка</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const calculateBtn = document.getElementById('calculateBtn');
-            const loader = document.getElementById('loader');
-            const results = document.getElementById('results');
-            const useCurrentTime = document.getElementById('useCurrentTime');
-            const datetimeControls = document.getElementById('datetimeControls');
-            const currentDateTime = document.getElementById('currentDateTime');
-            const gameTiming = document.getElementById('gameTiming');
-            const themeSwitcher = document.querySelector('.theme-switcher');
-            const customKeyboard = document.getElementById('customKeyboard');
-            const periodInputs = document.querySelectorAll('#period1, #period2, #period3');
-            
-            let currentInput = null;
-            
-            // Обновление текущей даты и времени каждую секунду
-            function updateCurrentDateTime() {
-                const now = new Date();
-                currentDateTime.textContent = now.toLocaleString('ru-RU', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
-                
-                // Обновляем информацию о времени четвертого периода
-                const period4Start = new Date(now);
-                const period4End = new Date(period4Start.getTime() + 5 * 60 * 1000); // +5 минут
-                
-                gameTiming.innerHTML = `Четвертый период: ${period4Start.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})} - ${period4End.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}`;
+        // Реальная нейросеть для прогнозирования тотала с улучшениями
+        class BasketballPredictor {
+            constructor() {
+                this.model = null;
+                this.trainingHistory = [];
+                this.isTraining = false;
+                this.validationData = [];
+                this.savedResults = []; // Новое: сохраненные результаты для обучения
+                this.trainingChart = null;
+                this.init();
             }
             
-            updateCurrentDateTime();
-            setInterval(updateCurrentDateTime, 1000);
+            async init() {
+                await this.createModel();
+                await this.loadModel();
+                await this.loadSavedResults(); // Новое: загружаем сохраненные результаты
+                this.updateStats();
+                this.initChart();
+            }
             
-            // Обработчик переключения использования текущего времени
-            useCurrentTime.addEventListener('change', function() {
-                datetimeControls.style.display = this.checked ? 'none' : 'flex';
-            });
+            async createModel() {
+                // Создаем реальную нейросеть с TensorFlow.js
+                this.model = tf.sequential({
+                    layers: [
+                        // Входной слой: 12 признаков
+                        tf.layers.dense({
+                            inputShape: [12],
+                            units: 64,
+                            activation: 'relu',
+                            kernelInitializer: 'heNormal'
+                        }),
+                        tf.layers.dropout({rate: 0.3}),
+                        
+                        // Скрытые слои
+                        tf.layers.dense({
+                            units: 32,
+                            activation: 'relu',
+                            kernelInitializer: 'heNormal'
+                        }),
+                        tf.layers.dropout({rate: 0.2}),
+                        
+                        tf.layers.dense({
+                            units: 16,
+                            activation: 'relu'
+                        }),
+                        
+                        // Выходной слой: прогнозируемый тотал
+                        tf.layers.dense({
+                            units: 1,
+                            activation: 'linear'
+                        })
+                    ]
+                });
+                
+                // Компиляция модели с оптимизатором Adam
+                this.model.compile({
+                    optimizer: tf.train.adam(0.001),
+                    loss: 'meanSquaredError',
+                    metrics: ['mae']
+                });
+                
+                console.log('Нейросеть создана успешно');
+            }
             
-            // Установка текущей даты и времени по умолчанию
-            const now = new Date();
-            document.getElementById('customDate').valueAsDate = now;
-            document.getElementById('customTime').value = 
-                `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            // Подготовка признаков для нейросети
+            prepareFeatures(gameData) {
+                const {
+                    score1, score2, period, minutes, seconds, 
+                    totalLine, leagueType, scoreDiff, homeAdvantage
+                } = gameData;
+                
+                const totalPoints = score1 + score2;
+                const totalSeconds = (period - 1) * this.getPeriodSeconds(leagueType) + (minutes * 60 + seconds);
+                const totalGameSeconds = this.getTotalGameSeconds(leagueType);
+                const secondsRemaining = totalGameSeconds - totalSeconds;
+                
+                // Нормализованные признаки
+                return [
+                    score1 / 200,           // Нормализованный счет команды 1
+                    score2 / 200,           // Нормализованный счет команды 2
+                    period / 4,            // Нормализованный период
+                    totalSeconds / totalGameSeconds, // Прогресс игры
+                    totalPoints / 400,     // Нормализованный общий счет
+                    scoreDiff / 50,        // Нормализованная разница
+                    homeAdvantage,         // Домашнее преимущество
+                    this.getLeagueFactor(leagueType), // Фактор лиги
+                    minutes / this.getPeriodMinutes(leagueType), // Прогресс периода
+                    seconds / 60,          // Нормализованные секунды
+                    totalLine / 300,       // Нормализованный тотал
+                    Math.max(0, secondsRemaining / totalGameSeconds) // Оставшееся время
+                ];
+            }
             
-            // Обработчики для переключателей темы
-            themeSwitcher.addEventListener('click', function(e) {
-                if (e.target.classList.contains('theme-btn')) {
-                    // Убираем активный класс со всех кнопок
-                    document.querySelectorAll('.theme-btn').forEach(btn => {
-                        btn.classList.remove('active');
+            getPeriodSeconds(leagueType) {
+                const minutes = this.getPeriodMinutes(leagueType);
+                return minutes * 60;
+            }
+            
+            getPeriodMinutes(leagueType) {
+                switch(leagueType) {
+                    case 'nba': return 12;
+                    case 'fib': return 10;
+                    case 'cyber': return 5;
+                    default: return 12;
+                }
+            }
+            
+            getTotalGameSeconds(leagueType) {
+                return this.getPeriodSeconds(leagueType) * 4;
+            }
+            
+            getLeagueFactor(leagueType) {
+                switch(leagueType) {
+                    case 'nba': return 0.9;
+                    case 'fib': return 0.8;
+                    case 'cyber': return 1.2;
+                    default: return 1.0;
+                }
+            }
+            
+            // Прогнозирование с помощью нейросети
+            async predict(gameData) {
+                if (!this.model) {
+                    throw new Error('Модель не инициализирована');
+                }
+                
+                const features = this.prepareFeatures(gameData);
+                const tensor = tf.tensor2d([features]);
+                
+                try {
+                    const prediction = await this.model.predict(tensor).data();
+                    const predictedTotal = prediction[0] * 300; // Денормализация
+                    
+                    tensor.dispose();
+                    
+                    return Math.max(100, Math.min(400, predictedTotal)); // Реалистичные пределы
+                } catch (error) {
+                    console.error('Ошибка прогнозирования:', error);
+                    return this.calculateBasicPrediction(gameData);
+                }
+            }
+            
+            // Базовый расчет для случаев, когда нейросеть недоступна
+            calculateBasicPrediction(gameData) {
+                const { score1, score2, period, minutes, seconds, leagueType } = gameData;
+                
+                const totalPoints = score1 + score2;
+                const totalSecondsPlayed = (period - 1) * this.getPeriodSeconds(leagueType) + (minutes * 60 + seconds);
+                const minutesPlayed = totalSecondsPlayed / 60;
+                const pointsPerMinute = minutesPlayed > 0 ? totalPoints / minutesPlayed : 2.0;
+                
+                const secondsRemaining = this.getTotalGameSeconds(leagueType) - totalSecondsPlayed;
+                const minutesRemaining = secondsRemaining / 60;
+                
+                let paceFactor = 1.0;
+                if (leagueType === 'cyber') paceFactor = 1.15;
+                if (leagueType === 'fib') paceFactor = 0.9;
+                
+                return totalPoints + (pointsPerMinute * minutesRemaining * paceFactor);
+            }
+            
+            // Обучение нейросети на новых данных
+            async trainModel(trainingData, epochs = 100, validationSplit = 0.2) {
+                if (this.isTraining) return;
+                
+                this.isTraining = true;
+                const statusElement = document.getElementById('training-status');
+                statusElement.innerHTML = '<div class="status-message status-info">ИИ обучается на новых данных...</div>';
+                
+                try {
+                    // Подготовка данных для обучения
+                    const features = [];
+                    const labels = [];
+                    
+                    // Добавляем исторические данные
+                    trainingData.forEach(item => {
+                        features.push(this.prepareFeatures(item.input));
+                        labels.push(item.actualTotal / 300); // Нормализация
                     });
                     
-                    // Добавляем активный класс к нажатой кнопке
-                    e.target.classList.add('active');
+                    if (features.length < 2) {
+                        console.log('Недостаточно данных для обучения');
+                        return;
+                    }
                     
-                    // Применяем выбранную тему
-                    const theme = e.target.getAttribute('data-theme');
-                    document.body.className = theme;
+                    const featuresTensor = tf.tensor2d(features);
+                    const labelsTensor = tf.tensor2d(labels, [labels.length, 1]);
+                    
+                    // Обучение модели с отслеживанием прогресса
+                    const history = await this.model.fit(featuresTensor, labelsTensor, {
+                        epochs: epochs,
+                        batchSize: Math.min(32, features.length),
+                        validationSplit: validationSplit,
+                        verbose: 0,
+                        callbacks: {
+                            onEpochEnd: (epoch, logs) => {
+                                const progress = (epoch / epochs) * 100;
+                                document.getElementById('training-progress').style.width = `${progress}%`;
+                                
+                                // Обновление графика обучения
+                                if (this.trainingChart && epoch % 5 === 0) {
+                                    this.updateChart(epoch, logs.loss, logs.val_loss);
+                                }
+                                
+                                if (epoch % 20 === 0) {
+                                    console.log(`Эпоха ${epoch}: ошибка = ${logs.loss.toFixed(4)}, валидация = ${logs.val_loss ? logs.val_loss.toFixed(4) : 'N/A'}`);
+                                }
+                            }
+                        }
+                    });
+                    
+                    // Очистка тензоров
+                    featuresTensor.dispose();
+                    labelsTensor.dispose();
+                    
+                    // Сохранение обновленной модели
+                    await this.saveModel();
+                    
+                    statusElement.innerHTML = '<div class="status-message status-success">Обучение ИИ завершено!</div>';
+                    setTimeout(() => statusElement.innerHTML = '', 3000);
+                    
+                    return history;
+                    
+                } catch (error) {
+                    console.error('Ошибка обучения:', error);
+                    statusElement.innerHTML = '<div class="status-message status-error">Ошибка обучения ИИ</div>';
+                } finally {
+                    this.isTraining = false;
+                    this.updateStats();
                 }
-            });
+            }
             
-            // Обработчики для кастомной клавиатуры
-            periodInputs.forEach(input => {
-                input.addEventListener('focus', function() {
-                    currentInput = this;
-                    customKeyboard.style.display = 'grid';
-                });
-            });
+            // Генерация синтетических данных для обучения
+            generateTrainingData(count = 100) {
+                const data = [];
+                const leagues = ['nba', 'fib', 'cyber'];
+                
+                for (let i = 0; i < count; i++) {
+                    const league = leagues[Math.floor(Math.random() * leagues.length)];
+                    const period = Math.floor(Math.random() * 4) + 1;
+                    const minutes = Math.floor(Math.random() * this.getPeriodMinutes(league));
+                    const seconds = Math.floor(Math.random() * 60);
+                    
+                    // Генерация реалистичного счета в зависимости от периода и лиги
+                    const maxPointsPerPeriod = league === 'cyber' ? 25 : (league === 'fib' ? 22 : 30);
+                    const totalPoints = Math.floor(Math.random() * maxPointsPerPeriod * period * 0.8) + 
+                                       Math.floor(Math.random() * maxPointsPerPeriod * period * 0.4);
+                    
+                    const score1 = Math.floor(Math.random() * totalPoints * 0.7) + Math.floor(totalPoints * 0.3);
+                    const score2 = totalPoints - score1;
+                    
+                    const input = {
+                        score1,
+                        score2,
+                        period,
+                        minutes,
+                        seconds,
+                        totalLine: Math.floor(Math.random() * 100) + 150, // 150-250
+                        totalType: Math.random() > 0.5 ? 'over' : 'under',
+                        leagueType: league,
+                        scoreDiff: Math.abs(score1 - score2),
+                        homeAdvantage: Math.random() > 0.7 ? 1 : (Math.random() > 0.5 ? 0 : 0.5)
+                    };
+                    
+                    // Реальный тотал с добавлением шума
+                    const actualTotal = this.calculateBasicPrediction(input) + (Math.random() * 20 - 10);
+                    
+                    data.push({
+                        input,
+                        predictedTotal: 0, // Будет вычислено позже
+                        actualTotal,
+                        timestamp: Date.now()
+                    });
+                }
+                
+                return data;
+            }
             
-            customKeyboard.addEventListener('click', function(e) {
-                if (e.target.classList.contains('keyboard-key')) {
-                    if (e.target.classList.contains('clear')) {
-                        if (currentInput) {
-                            currentInput.value = '';
+            // Валидация модели на тестовых данных
+            async validateModel(testData) {
+                if (!this.model || testData.length === 0) {
+                    return { accuracy: 0, avgError: 0, predictions: [] };
+                }
+                
+                const predictions = [];
+                let totalError = 0;
+                let correctPredictions = 0;
+                
+                for (const item of testData) {
+                    try {
+                        const predictedTotal = await this.predict(item.input);
+                        const error = Math.abs(predictedTotal - item.actualTotal);
+                        totalError += error;
+                        
+                        // Считаем предсказание верным, если ошибка < 10 очков
+                        if (error < 10) {
+                            correctPredictions++;
                         }
-                    } else if (e.target.classList.contains('done')) {
-                        customKeyboard.style.display = 'none';
-                        if (currentInput) {
-                            currentInput.blur();
-                        }
-                    } else {
-                        const value = e.target.getAttribute('data-value');
-                        if (currentInput) {
-                            currentInput.value += value;
-                        }
+                        
+                        predictions.push({
+                            input: item.input,
+                            predictedTotal,
+                            actualTotal: item.actualTotal,
+                            error
+                        });
+                    } catch (error) {
+                        console.error('Ошибка при валидации:', error);
                     }
                 }
-            });
-            
-            // Закрытие кастомной клавиатуры при клике вне ее
-            document.addEventListener('click', function(e) {
-                if (!customKeyboard.contains(e.target) && 
-                    !Array.from(periodInputs).some(input => input.contains(e.target))) {
-                    customKeyboard.style.display = 'none';
-                }
-            });
-            
-            calculateBtn.addEventListener('click', function() {
-                const period1 = parseInt(document.getElementById('period1').value);
-                const period2 = parseInt(document.getElementById('period2').value);
-                const period3 = parseInt(document.getElementById('period3').value);
                 
-                if (!period1 || !period2 || !period3) {
-                    alert('Пожалуйста, заполните все поля корректными числами');
+                const accuracy = (correctPredictions / testData.length) * 100;
+                const avgError = totalError / testData.length;
+                
+                return { accuracy, avgError, predictions };
+            }
+            
+            // Сохранение модели в LocalStorage
+            async saveModel() {
+                try {
+                    // Сохраняем веса модели
+                    const modelInfo = {
+                        trainingHistory: this.trainingHistory,
+                        validationData: this.validationData,
+                        savedResults: this.savedResults, // Новое: сохраняем результаты
+                        timestamp: Date.now(),
+                        modelTopology: this.model.toJSON(),
+                    };
+                    
+                    // Сохраняем веса модели отдельно
+                    const weights = await this.model.getWeights();
+                    const weightData = await Promise.all(weights.map(async (weight) => {
+                        const data = await weight.data();
+                        return { shape: weight.shape, data: Array.from(data) };
+                    }));
+                    
+                    modelInfo.weightData = weightData;
+                    
+                    localStorage.setItem('basketballModelInfo', JSON.stringify(modelInfo));
+                    console.log('Модель сохранена успешно');
+                } catch (error) {
+                    console.error('Ошибка сохранения модели:', error);
+                }
+            }
+            
+            // Загрузка модели из LocalStorage
+            async loadModel() {
+                try {
+                    const saved = localStorage.getItem('basketballModelInfo');
+                    if (saved) {
+                        const modelInfo = JSON.parse(saved);
+                        this.trainingHistory = modelInfo.trainingHistory || [];
+                        this.validationData = modelInfo.validationData || [];
+                        this.savedResults = modelInfo.savedResults || []; // Новое: загружаем результаты
+                        
+                        // Восстанавливаем модель, если есть данные
+                        if (modelInfo.modelTopology && modelInfo.weightData) {
+                            // Создаем модель из сохраненной топологии
+                            this.model = await tf.models.modelFromJSON(modelInfo.modelTopology);
+                            
+                            // Восстанавливаем веса
+                            const weightTensors = modelInfo.weightData.map(w => 
+                                tf.tensor(w.data, w.shape)
+                            );
+                            
+                            this.model.setWeights(weightTensors);
+                            
+                            // Компилируем модель
+                            this.model.compile({
+                                optimizer: tf.train.adam(0.001),
+                                loss: 'meanSquaredError',
+                                metrics: ['mae']
+                            });
+                            
+                            console.log('Модель загружена успешно, записей:', this.trainingHistory.length);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Ошибка загрузки модели:', error);
+                    this.trainingHistory = [];
+                    this.validationData = [];
+                    this.savedResults = [];
+                }
+            }
+            
+            // НОВОЕ: Загрузка сохраненных результатов из LocalStorage
+            async loadSavedResults() {
+                try {
+                    const saved = localStorage.getItem('basketballSavedResults');
+                    if (saved) {
+                        this.savedResults = JSON.parse(saved);
+                        console.log('Сохраненные результаты загружены:', this.savedResults.length);
+                    }
+                } catch (error) {
+                    console.error('Ошибка загрузки сохраненных результатов:', error);
+                    this.savedResults = [];
+                }
+            }
+            
+            // НОВОЕ: Сохранение результатов в LocalStorage
+            async saveResultsToStorage() {
+                try {
+                    localStorage.setItem('basketballSavedResults', JSON.stringify(this.savedResults));
+                    console.log('Сохраненные результаты записаны в хранилище');
+                } catch (error) {
+                    console.error('Ошибка сохранения результатов:', error);
+                }
+            }
+            
+            // НОВОЕ: Добавление сохраненного результата
+            addSavedResult(gameData, predictedTotal, actualTotal) {
+                const result = {
+                    input: gameData,
+                    predictedTotal,
+                    actualTotal,
+                    timestamp: Date.now(),
+                    error: Math.abs(predictedTotal - actualTotal)
+                };
+                
+                this.savedResults.push(result);
+                this.saveResultsToStorage();
+                console.log('Результат сохранен для обучения ИИ');
+                
+                return result;
+            }
+            
+            // НОВОЕ: Обучение на сохраненных результатах
+            async trainOnSavedResults() {
+                if (this.savedResults.length === 0) {
+                    console.log('Нет сохраненных результатов для обучения');
+                    return false;
+                }
+                
+                // Преобразуем сохраненные результаты в формат для обучения
+                const trainingData = this.savedResults.map(result => ({
+                    input: result.input,
+                    actualTotal: result.actualTotal
+                }));
+                
+                await this.trainModel(trainingData, 50, 0.2);
+                return true;
+            }
+            
+            // НОВОЕ: Получение истории сохраненных результатов
+            getSavedResults() {
+                return this.savedResults;
+            }
+            
+            // НОВОЕ: Очистка истории сохраненных результатов
+            clearSavedResults() {
+                this.savedResults = [];
+                this.saveResultsToStorage();
+                console.log('История сохраненных результатов очищена');
+            }
+            
+            // Инициализация графика обучения
+            initChart() {
+                const ctx = document.getElementById('training-chart').getContext('2d');
+                this.trainingChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            {
+                                label: 'Ошибка обучения',
+                                data: [],
+                                borderColor: '#3498db',
+                                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            },
+                            {
+                                label: 'Ошибка валидации',
+                                data: [],
+                                borderColor: '#e74c3c',
+                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Ошибка'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Эпоха'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Обновление графика обучения
+            updateChart(epoch, loss, valLoss) {
+                if (!this.trainingChart) return;
+                
+                this.trainingChart.data.labels.push(epoch);
+                this.trainingChart.data.datasets[0].data.push(loss);
+                
+                if (valLoss) {
+                    this.trainingChart.data.datasets[1].data.push(valLoss);
+                }
+                
+                this.trainingChart.update();
+            }
+            
+            // Обновление статистики модели
+            updateStats() {
+                document.getElementById('training-count').textContent = this.trainingHistory.length;
+                document.getElementById('data-points').textContent = this.trainingHistory.length + this.validationData.length;
+                
+                // Расчет точности модели
+                if (this.trainingHistory.length > 0) {
+                    const recent = this.trainingHistory.slice(-10);
+                    const accuracy = recent.filter(item => 
+                        Math.abs(item.predictedTotal - item.actualTotal) < 10
+                    ).length / recent.length * 100;
+                    
+                    document.getElementById('model-accuracy').textContent = `${accuracy.toFixed(1)}%`;
+                    
+                    const avgError = recent.reduce((sum, item) => 
+                        sum + Math.abs(item.predictedTotal - item.actualTotal), 0
+                    ) / recent.length;
+                    
+                    document.getElementById('avg-error').textContent = avgError.toFixed(1);
+                }
+            }
+            
+            // Добавление данных для обратного обучения
+            addTrainingData(input, predictedTotal, actualTotal) {
+                const trainingData = {
+                    input,
+                    predictedTotal,
+                    actualTotal,
+                    timestamp: Date.now()
+                };
+                
+                this.trainingHistory.push(trainingData);
+                this.trainModel(this.trainingHistory, 50, 0.2);
+            }
+        }
+
+        // Основной класс приложения
+        class BasketballAnalysisApp {
+            constructor() {
+                this.predictor = new BasketballPredictor();
+                this.currentPrediction = null;
+                this.init();
+            }
+            
+            init() {
+                this.setupEventListeners();
+                this.updateScoreDiff();
+                this.showStatus('Система готова к работе', 'success');
+                this.loadHistory(); // Новое: загружаем историю при инициализации
+            }
+            
+            setupEventListeners() {
+                document.getElementById('analyze-btn').addEventListener('click', () => {
+                    this.analyzeGame(false);
+                });
+                
+                document.getElementById('ai-analyze').addEventListener('click', () => {
+                    this.analyzeGame(true);
+                });
+                
+                document.getElementById('train-btn').addEventListener('click', () => {
+                    this.trainWithGeneratedData();
+                });
+                
+                document.getElementById('generate-data').addEventListener('click', () => {
+                    this.generateTrainingData();
+                });
+                
+                document.getElementById('validate-model').addEventListener('click', () => {
+                    this.validateModel();
+                });
+                
+                document.getElementById('clear-btn').addEventListener('click', () => {
+                    this.clearForm();
+                });
+                
+                // НОВОЕ: Обработчики для сохранения результатов
+                document.getElementById('save-result').addEventListener('click', () => {
+                    this.saveResult();
+                });
+                
+                document.getElementById('train-with-saved').addEventListener('click', () => {
+                    this.trainWithSavedResults();
+                });
+                
+                document.getElementById('clear-history').addEventListener('click', () => {
+                    this.clearHistory();
+                });
+                
+                // Автоматический пересчет при изменении данных
+                ['score1', 'score2', 'period', 'minutes', 'seconds'].forEach(id => {
+                    document.getElementById(id).addEventListener('input', () => {
+                        this.updateScoreDiff();
+                        this.updateAutoPrediction();
+                    });
+                });
+            }
+            
+            updateScoreDiff() {
+                const score1 = parseInt(document.getElementById('score1').value) || 0;
+                const score2 = parseInt(document.getElementById('score2').value) || 0;
+                document.getElementById('score-diff').value = Math.abs(score1 - score2);
+            }
+            
+            updateAutoPrediction() {
+                // Быстрый предварительный расчет
+                const gameData = this.getGameData();
+                if (gameData.score1 > 0 || gameData.score2 > 0) {
+                    const basicPrediction = this.predictor.calculateBasicPrediction(gameData);
+                    document.getElementById('predicted-total').textContent = basicPrediction.toFixed(1);
+                    document.getElementById('predicted-total').className = 'result-value neutral';
+                }
+            }
+            
+            getGameData() {
+                return {
+                    score1: parseInt(document.getElementById('score1').value) || 0,
+                    score2: parseInt(document.getElementById('score2').value) || 0,
+                    period: parseInt(document.getElementById('period').value) || 1,
+                    minutes: parseInt(document.getElementById('minutes').value) || 0,
+                    seconds: parseInt(document.getElementById('seconds').value) || 0,
+                    totalLine: parseFloat(document.getElementById('total-line').value) || 0,
+                    totalType: document.getElementById('total-type').value,
+                    leagueType: document.getElementById('league-type').value,
+                    scoreDiff: Math.abs(
+                        (parseInt(document.getElementById('score1').value) || 0) - 
+                        (parseInt(document.getElementById('score2').value) || 0)
+                    ),
+                    homeAdvantage: parseFloat(document.getElementById('home-team').value)
+                };
+            }
+            
+            async analyzeGame(useAI = true) {
+                const gameData = this.getGameData();
+                
+                // Валидация данных
+                if (gameData.score1 === 0 && gameData.score2 === 0) {
+                    this.showStatus('Введите счет матча', 'error');
                     return;
                 }
                 
-                // Показать загрузку
-                loader.style.display = 'block';
-                results.style.display = 'none';
+                this.showStatus('Анализ данных...', 'success');
                 
-                // Имитация расчета
-                setTimeout(() => {
-                    calculatePredictions(period1, period2, period3);
-                    loader.style.display = 'none';
-                    results.style.display = 'block';
-                }, 1500);
-            });
+                try {
+                    let predictedTotal;
+                    let confidence;
+                    
+                    if (useAI && await tf.ready()) {
+                        // Использование нейросети
+                        predictedTotal = await this.predictor.predict(gameData);
+                        confidence = this.calculateAIConfidence(gameData, predictedTotal);
+                    } else {
+                        // Базовый расчет
+                        predictedTotal = this.predictor.calculateBasicPrediction(gameData);
+                        confidence = this.calculateBasicConfidence(gameData, predictedTotal);
+                    }
+                    
+                    this.displayResults(gameData, predictedTotal, confidence, useAI);
+                    this.currentPrediction = { gameData, predictedTotal, useAI };
+                    
+                } catch (error) {
+                    console.error('Ошибка анализа:', error);
+                    this.showStatus('Ошибка анализа. Проверьте данные.', 'error');
+                }
+            }
             
-            function getDateTimeFactors() {
-                let dateTime;
+            calculateAIConfidence(gameData, predictedTotal) {
+                const { period, scoreDiff, totalLine } = gameData;
                 
-                if (useCurrentTime.checked) {
-                    // Используем время начала четвертого периода (текущее время)
-                    dateTime = new Date();
+                let confidence = 70; // Базовая уверенность ИИ
+                
+                // Коррекция на основе периода
+                confidence += (period - 1) * 5;
+                
+                // Коррекция на основе разницы в счете
+                if (scoreDiff > 20) confidence -= 10;
+                else if (scoreDiff < 5) confidence += 5;
+                
+                // Коррекция на основе размера тотала
+                const deviation = Math.abs(predictedTotal - totalLine);
+                if (deviation < 5) confidence -= 15;
+                else if (deviation > 15) confidence += 10;
+                
+                return Math.max(50, Math.min(95, confidence));
+            }
+            
+            calculateBasicConfidence(gameData, predictedTotal) {
+                const { period, totalLine } = gameData;
+                
+                let confidence = 60; // Базовая уверенность
+                confidence += (period - 1) * 8; // Чем позже период, тем выше уверенность
+                
+                // Уверенность снижается если прогноз близок к тоталу
+                const deviation = Math.abs(predictedTotal - totalLine);
+                if (deviation < 3) confidence = 50;
+                
+                return Math.max(40, Math.min(85, confidence));
+            }
+            
+            displayResults(gameData, predictedTotal, confidence, useAI) {
+                const { totalLine, totalType } = gameData;
+                
+                // Обновление основных показателей
+                document.getElementById('predicted-total').textContent = predictedTotal.toFixed(1);
+                document.getElementById('predicted-pace').textContent = 
+                    (predictedTotal / (this.predictor.getTotalGameSeconds(gameData.leagueType) / 60)).toFixed(2);
+                document.getElementById('ai-accuracy').textContent = useAI ? 
+                    `${this.predictor.trainingHistory.length > 0 ? 
+                        (this.predictor.trainingHistory.filter(item => 
+                            Math.abs(item.predictedTotal - item.actualTotal) < 10
+                        ).length / this.predictor.trainingHistory.length * 100).toFixed(1) : '0.0'}%` : 'Базовый';
+                
+                document.getElementById('confidence').textContent = `${confidence}%`;
+                
+                // Обновление индикатора уверенности
+                document.getElementById('confidence-bar').style.width = `${confidence}%`;
+                document.getElementById('confidence-value').textContent = `${confidence}%`;
+                
+                // Формирование рекомендации
+                const recommendationElement = document.getElementById('recommendation');
+                const titleElement = document.getElementById('recommendation-title');
+                
+                const deviation = predictedTotal - totalLine;
+                let recommendation, explanation;
+                
+                if (totalType === 'over') {
+                    if (deviation > 8) {
+                        recommendation = 'СТРОГИЙ ТБ';
+                        explanation = `Прогноз выше тотала на ${deviation.toFixed(1)} очков`;
+                        recommendationElement.className = 'recommendation positive';
+                    } else if (deviation > 3) {
+                        recommendation = 'ТБ РЕКОМЕНДУЕТСЯ';
+                        explanation = `Прогноз выше тотала на ${deviation.toFixed(1)} очков`;
+                        recommendationElement.className = 'recommendation positive';
+                    } else if (deviation > -3) {
+                        recommendation = 'НЕОПРЕДЕЛЕННО';
+                        explanation = 'Прогноз близок к тоталу';
+                        recommendationElement.className = 'recommendation';
+                    } else {
+                        recommendation = 'ТБ НЕ РЕКОМЕНДУЕТСЯ';
+                        explanation = `Прогноз ниже тотала на ${Math.abs(deviation).toFixed(1)} очков`;
+                        recommendationElement.className = 'recommendation negative';
+                    }
+                } else { // under
+                    if (deviation < -8) {
+                        recommendation = 'СТРОГИЙ ТМ';
+                        explanation = `Прогноз ниже тотала на ${Math.abs(deviation).toFixed(1)} очков`;
+                        recommendationElement.className = 'recommendation positive';
+                    } else if (deviation < -3) {
+                        recommendation = 'ТМ РЕКОМЕНДУЕТСЯ';
+                        explanation = `Прогноз ниже тотала на ${Math.abs(deviation).toFixed(1)} очков`;
+                        recommendationElement.className = 'recommendation positive';
+                    } else if (deviation < 3) {
+                        recommendation = 'НЕОПРЕДЕЛЕННО';
+                        explanation = 'Прогноз близок к тоталу';
+                        recommendationElement.className = 'recommendation';
+                    } else {
+                        recommendation = 'ТМ НЕ РЕКОМЕНДУЕТСЯ';
+                        explanation = `Прогноз выше тотала на ${deviation.toFixed(1)} очков`;
+                        recommendationElement.className = 'recommendation negative';
+                    }
+                }
+                
+                titleElement.innerHTML = `<strong>${recommendation}</strong><br><small>${explanation}</small>`;
+                recommendationElement.style.display = 'block';
+                
+                this.showStatus(`Анализ завершен ${useAI ? 'с ИИ' : 'базовый'}`, 'success');
+                this.predictor.updateStats();
+            }
+            
+            // НОВОЕ: Сохранение результата для обучения ИИ
+            saveResult() {
+                if (!this.currentPrediction) {
+                    this.showSaveStatus('Сначала сделайте прогноз', 'error');
+                    return;
+                }
+                
+                const actualTotal = parseFloat(document.getElementById('actual-total').value);
+                if (isNaN(actualTotal) || actualTotal <= 0) {
+                    this.showSaveStatus('Введите корректный фактический тотал', 'error');
+                    return;
+                }
+                
+                const { gameData, predictedTotal } = this.currentPrediction;
+                
+                // Сохраняем результат
+                const result = this.predictor.addSavedResult(gameData, predictedTotal, actualTotal);
+                
+                // Очищаем поле ввода
+                document.getElementById('actual-total').value = '';
+                
+                // Обновляем историю
+                this.loadHistory();
+                
+                this.showSaveStatus(`Результат сохранен! Ошибка прогноза: ${result.error.toFixed(1)}`, 'success');
+            }
+            
+            // НОВОЕ: Обучение на сохраненных результатах
+            async trainWithSavedResults() {
+                if (this.predictor.savedResults.length === 0) {
+                    this.showSaveStatus('Нет сохраненных результатов для обучения', 'error');
+                    return;
+                }
+                
+                this.showSaveStatus('Обучение на сохраненных результатах...', 'info');
+                
+                const success = await this.predictor.trainOnSavedResults();
+                
+                if (success) {
+                    this.showSaveStatus(`Обучение завершено на ${this.predictor.savedResults.length} сохраненных результатах`, 'success');
                 } else {
-                    const dateStr = document.getElementById('customDate').value;
-                    const timeStr = document.getElementById('customTime').value;
-                    const timezone = parseInt(document.getElementById('timezone').value);
-                    
-                    dateTime = new Date(`${dateStr}T${timeStr}Z`);
-                    // Учитываем часовой пояс
-                    dateTime.setHours(dateTime.getHours() + timezone);
-                }
-                
-                // Извлекаем компоненты даты и времени
-                const year = dateTime.getFullYear();
-                const month = dateTime.getMonth() + 1; // Месяцы от 1 до 12
-                const day = dateTime.getDate();
-                const hour = dateTime.getHours();
-                const minute = dateTime.getMinutes();
-                const second = dateTime.getSeconds();
-                const dayOfWeek = dateTime.getDay() === 0 ? 7 : dateTime.getDay(); // Воскресенье = 7
-                
-                // Вычисляем факторы даты и времени
-                const dateFactor = calculateNumerologicalRoot(day + month + year);
-                const timeFactor = calculateNumerologicalRoot(hour + minute + second);
-                const dayOfWeekFactor = dayOfWeek;
-                const combinedFactor = calculateNumerologicalRoot(dateFactor + timeFactor + dayOfWeekFactor);
-                
-                return {
-                    dateTime,
-                    dateFactor,
-                    timeFactor,
-                    dayOfWeekFactor,
-                    combinedFactor,
-                    components: { year, month, day, hour, minute, second, dayOfWeek }
-                };
-            }
-            
-            function calculatePredictions(period1, period2, period3) {
-                // Получаем факторы даты и времени
-                const datetimeFactors = getDateTimeFactors();
-                
-                // Вычисляем нумерологические корни периодов
-                const root1 = calculateNumerologicalRoot(period1);
-                const root2 = calculateNumerologicalRoot(period2);
-                const root3 = calculateNumerologicalRoot(period3);
-                
-                // Вычисляем четвертый период с учетом даты и времени
-                const period4 = calculateFourthPeriod(period1, period2, period3, root1, root2, root3, datetimeFactors);
-                const root4 = calculateNumerologicalRoot(period4);
-                
-                // Вычисляем общий тотал
-                const total = period1 + period2 + period3 + period4;
-                const totalRoot = calculateNumerologicalRoot(total);
-                
-                // Обновляем UI с результатами
-                document.getElementById('period4Result').textContent = period4;
-                document.getElementById('period4Root').textContent = root4;
-                document.getElementById('totalResult').textContent = total;
-                document.getElementById('totalRoot').textContent = totalRoot;
-                document.getElementById('datetimeFactor').textContent = datetimeFactors.combinedFactor;
-                document.getElementById('datetimeUsed').textContent = datetimeFactors.dateTime.toLocaleString('ru-RU');
-                
-                // Анализ влияния даты и времени
-                updateDateTimeAnalysis(datetimeFactors);
-                
-                // Генерируем магический квадрат
-                generateMagicSquare(root1, root2, root3, root4, datetimeFactors);
-                
-                // Генерируем рекомендации
-                generateRecommendations(period4, total, root4, totalRoot);
-                
-                // Генерируем анализ
-                generateAnalysis(root1, root2, root3, root4, totalRoot, datetimeFactors);
-            }
-            
-            function calculateNumerologicalRoot(number) {
-                let current = number;
-                while (current > 9) {
-                    current = current.toString().split('').reduce((sum, digit) => sum + parseInt(digit), 0);
-                }
-                return current;
-            }
-            
-            function calculateFourthPeriod(period1, period2, period3, root1, root2, root3, datetimeFactors) {
-                // Метод Сидика Авгана для вычисления четвертого периода с учетом даты и времени
-                const mean = Math.round((period1 + period2 + period3) / 3);
-                const sumRoots = root1 + root2 + root3;
-                
-                // Учитываем фактор даты и времени в расчете
-                let root4;
-                const adjustedSum = sumRoots + datetimeFactors.combinedFactor;
-                if (adjustedSum % 9 === 0) {
-                    root4 = 9;
-                } else {
-                    root4 = adjustedSum % 9;
-                }
-                
-                // Находим ближайшее число с нужным корнем
-                return findNearestWithRoot(mean, root4);
-            }
-            
-            function findNearestWithRoot(target, targetRoot) {
-                let upper = target;
-                let lower = target;
-                
-                while (true) {
-                    if (calculateNumerologicalRoot(upper) === targetRoot) {
-                        return upper;
-                    }
-                    
-                    if (lower > 0 && calculateNumerologicalRoot(lower) === targetRoot) {
-                        return lower;
-                    }
-                    
-                    upper++;
-                    lower--;
+                    this.showSaveStatus('Ошибка при обучении на сохраненных результатах', 'error');
                 }
             }
             
-            function updateDateTimeAnalysis(datetimeFactors) {
-                const analysisElement = document.getElementById('datetimeAnalysis');
-                const { dateFactor, timeFactor, dayOfWeekFactor, combinedFactor, components } = datetimeFactors;
+            // НОВОЕ: Загрузка истории сохраненных результатов
+            loadHistory() {
+                const historyList = document.getElementById('history-list');
+                const results = this.predictor.getSavedResults();
                 
-                const dayNames = ['', 'понедельник', 'вторник', 'среду', 'четверг', 'пятницу', 'субботу', 'воскресенье'];
-                const monthNames = [
-                    '', 'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-                    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
-                ];
-                
-                let analysis = `Расчет выполнен для начала четвертого периода (${components.day} ${monthNames[components.month]} ${components.year} года, `;
-                analysis += `в ${components.hour.toString().padStart(2, '0')}:${components.minute.toString().padStart(2, '0')}, ${dayNames[components.dayOfWeek]}). `;
-                analysis += `Фактор даты: ${dateFactor}, фактор времени: ${timeFactor}, фактор дня недели: ${dayOfWeekFactor}. `;
-                analysis += `Комбинированный фактор: ${combinedFactor}. `;
-                
-                if (combinedFactor === 7) {
-                    analysis += `Это благоприятный знак - число 7 связано с удачей в системе Сидика Авгана.`;
-                } else if (combinedFactor === 8) {
-                    analysis += `Это указывает на потенциал изобилия и успеха.`;
-                } else if (combinedFactor === 9) {
-                    analysis += `Это знак завершения и новых начинаний.`;
+                if (results.length === 0) {
+                    historyList.innerHTML = '<div class="history-item">Нет сохраненных результатов</div>';
+                    return;
                 }
                 
-                analysisElement.textContent = analysis;
-            }
-            
-            function generateMagicSquare(root1, root2, root3, root4, datetimeFactors) {
-                const magicSquare = document.getElementById('magicSquare');
-                magicSquare.innerHTML = '';
+                // Сортируем по времени (новые сверху)
+                const sortedResults = [...results].sort((a, b) => b.timestamp - a.timestamp);
                 
-                // Магический квадрат Сидика Авгана 4x4
-                const sidikAvganSquare = [
-                    [16, 3, 2, 13],
-                    [5, 10, 11, 8],
-                    [9, 6, 7, 12],
-                    [4, 15, 14, 1]
-                ];
+                historyList.innerHTML = '';
                 
-                // Адаптируем квадрат с учетом корней периодов и фактора даты/времени
-                for (let i = 0; i < 4; i++) {
-                    for (let j = 0; j < 4; j++) {
-                        const cell = document.createElement('div');
-                        cell.className = 'square-cell';
-                        
-                        // Модифицируем значения на основе факторов
-                        let value = sidikAvganSquare[i][j];
-                        if (i === 0 && j === 0) value += root1 - 1;
-                        if (i === 0 && j === 3) value += root2 - 1;
-                        if (i === 3 && j === 0) value += root3 - 1;
-                        if (i === 3 && j === 3) value += root4 - 1;
-                        
-                        // Центральные ячейки корректируем на основе фактора даты/времени
-                        if ((i === 1 && j === 1) || (i === 2 && j === 2)) {
-                            value += datetimeFactors.combinedFactor;
-                        }
-                        
-                        // Нормализуем значение
-                        while (value > 16) value -= 16;
-                        while (value < 1) value += 16;
-                        
-                        cell.textContent = value;
-                        
-                        // Подсвечиваем ячейки, связанные с периодами
-                        if ((i === 0 && j === 0) || (i === 0 && j === 3) || 
-                            (i === 3 && j === 0) || (i === 3 && j === 3)) {
-                            cell.classList.add('highlight');
-                        }
-                        
-                        magicSquare.appendChild(cell);
-                    }
-                }
-            }
-            
-            function generateRecommendations(period4, total, root4, totalRoot) {
-                document.getElementById('recPeriodRoot').textContent = root4;
-                document.getElementById('recTotalRoot').textContent = totalRoot;
-                
-                // Рекомендации для четвертого периода
-                const periodRecs = document.getElementById('periodRecommendations');
-                periodRecs.innerHTML = '';
-                
-                const periodNumbers = findNumbersWithRoot(root4, period4, 10);
-                periodNumbers.forEach(num => {
+                sortedResults.forEach((result, index) => {
                     const item = document.createElement('div');
-                    item.className = 'recommendation-item';
-                    item.textContent = num;
-                    periodRecs.appendChild(item);
-                });
-                
-                // Рекомендации для общего тотала
-                const totalRecs = document.getElementById('totalRecommendations');
-                totalRecs.innerHTML = '';
-                
-                const totalNumbers = findNumbersWithRoot(totalRoot, total, 10);
-                totalNumbers.forEach(num => {
-                    const item = document.createElement('div');
-                    item.className = 'recommendation-item';
-                    item.textContent = num;
-                    totalRecs.appendChild(item);
+                    item.className = 'history-item';
+                    
+                    const date = new Date(result.timestamp);
+                    const dateString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                    
+                    item.innerHTML = `
+                        <div class="history-header">
+                            <span>Результат #${sortedResults.length - index}</span>
+                            <span>${dateString}</span>
+                        </div>
+                        <div class="history-details">
+                            <div>Счет: ${result.input.score1}:${result.input.score2}</div>
+                            <div>Период: ${result.input.period}</div>
+                            <div>Прогноз: ${result.predictedTotal.toFixed(1)}</div>
+                            <div>Реальный: ${result.actualTotal.toFixed(1)}</div>
+                            <div>Ошибка: ${result.error.toFixed(1)}</div>
+                            <div>Лига: ${result.input.leagueType}</div>
+                        </div>
+                    `;
+                    
+                    historyList.appendChild(item);
                 });
             }
             
-            function findNumbersWithRoot(targetRoot, nearValue, count) {
-                const numbers = [];
-                let current = nearValue;
+            // НОВОЕ: Очистка истории
+            clearHistory() {
+                this.predictor.clearSavedResults();
+                this.loadHistory();
+                this.showSaveStatus('История очищена', 'success');
+            }
+            
+            // НОВОЕ: Показать статус для раздела сохранения
+            showSaveStatus(message, type) {
+                const statusElement = document.getElementById('save-status');
+                statusElement.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
                 
-                while (numbers.length < count) {
-                    if (calculateNumerologicalRoot(current) === targetRoot && current > 0) {
-                        numbers.push(current);
-                    }
-                    
-                    if (numbers.length < count) {
-                        const opposite = nearValue - (current - nearValue);
-                        if (calculateNumerologicalRoot(opposite) === targetRoot && opposite > 0) {
-                            numbers.push(opposite);
+                if (type === 'success') {
+                    setTimeout(() => {
+                        if (statusElement.innerHTML.includes(message)) {
+                            statusElement.innerHTML = '';
                         }
-                    }
-                    
-                    current++;
-                    
-                    if (current > nearValue + 100) break;
+                    }, 5000);
                 }
-                
-                return [...new Set(numbers)].sort((a, b) => a - b).slice(0, count);
             }
             
-            function generateAnalysis(root1, root2, root3, root4, totalRoot, datetimeFactors) {
-                const analysisText = document.getElementById('analysisText');
+            // Генерация тренировочных данных
+            async generateTrainingData() {
+                this.showStatus('Генерация тренировочных данных...', 'info');
                 
-                let analysis = '';
+                const trainingData = this.predictor.generateTrainingData(200);
+                this.predictor.trainingHistory = trainingData;
                 
-                // Анализ четвертого периода
-                analysis += `<p><strong>Четвертый период имеет корень ${root4}:</strong> ${getRootMeaning(root4)}</p>`;
+                // Разделяем на обучающую и валидационную выборки
+                const splitIndex = Math.floor(trainingData.length * 0.8);
+                this.predictor.trainingHistory = trainingData.slice(0, splitIndex);
+                this.predictor.validationData = trainingData.slice(splitIndex);
                 
-                // Анализ общего тотала
-                analysis += `<p><strong>Общий тотал имеет корень ${totalRoot}:</strong> ${getRootMeaning(totalRoot)}</p>`;
+                await this.predictor.saveModel();
+                this.predictor.updateStats();
                 
-                // Анализ влияния даты и времени
-                analysis += `<p><strong>Влияние даты/времени:</strong> Фактор ${datetimeFactors.combinedFactor} (${getRootMeaning(datetimeFactors.combinedFactor)})</p>`;
-                
-                // Специальные комбинации
-                if (totalRoot === 7) {
-                    analysis += `<p>✨ <strong>Особый знак:</strong> Тотал имеет корень 7 - число удачи и мистики в системе Сидика Авгана</p>`;
-                }
-                
-                if ([root1, root2, root3, root4].filter(root => root === 8).length >= 2) {
-                    analysis += `<p>✨ <strong>Благоприятный знак:</strong> Несколько периодов имеют корень 8 - число изобилия и успеха</p>`;
-                }
-                
-                if ([3, 6, 9].includes(totalRoot)) {
-                    analysis += `<p>✨ <strong>Гармоничная комбинация:</strong> Тотал имеет "магический" корень ${totalRoot}</p>`;
-                }
-                
-                if (datetimeFactors.combinedFactor === root4) {
-                    analysis += `<p>✨ <strong>Синхронность:</strong> Фактор даты/времени совпадает с корнем четвертого периода</p>`;
-                }
-                
-                analysisText.innerHTML = analysis;
+                this.showStatus(`Сгенерировано ${trainingData.length} записей (80% обучение, 20% валидация)`, 'success');
             }
             
-            function getRootMeaning(root) {
-                const meanings = {
-                    1: "инициация, начало, лидерство",
-                    2: "баланс, партнерство, гармония", 
-                    3: "творчество, рост, самовыражение",
-                    4: "стабильность, порядок, практичность",
-                    5: "изменения, свобода, адаптивность",
-                    6: "ответственность, забота, гармония",
-                    7: "анализ, мудрость, духовность", 
-                    8: "изобилие, успех, материальные блага",
-                    9: "завершение, мудрость, гуманизм"
-                };
+            // Обучение на сгенерированных данных
+            async trainWithGeneratedData() {
+                if (this.predictor.trainingHistory.length === 0) {
+                    this.showStatus('Сначала сгенерируйте тренировочные данные', 'error');
+                    return;
+                }
                 
-                return meanings[root] || "нейтральная энергия";
+                this.showStatus('Начало обучения нейросети...', 'info');
+                
+                await this.predictor.trainModel(this.predictor.trainingHistory, 100, 0.2);
+                
+                this.showStatus('Обучение завершено!', 'success');
+                this.predictor.updateStats();
             }
+            
+            // Валидация модели
+            async validateModel() {
+                if (this.predictor.validationData.length === 0) {
+                    this.showStatus('Нет данных для валидации. Сгенерируйте данные сначала.', 'error');
+                    return;
+                }
+                
+                this.showStatus('Проверка модели на тестовых данных...', 'info');
+                
+                const results = await this.predictor.validateModel(this.predictor.validationData);
+                
+                this.showStatus(
+                    `Валидация завершена. Точность: ${results.accuracy.toFixed(1)}%, Средняя ошибка: ${results.avgError.toFixed(1)}`, 
+                    'success'
+                );
+                
+                // Обновляем статистику модели
+                document.getElementById('model-accuracy').textContent = `${results.accuracy.toFixed(1)}%`;
+                document.getElementById('avg-error').textContent = results.avgError.toFixed(1);
+            }
+            
+            showStatus(message, type) {
+                const statusElement = document.getElementById('status-message');
+                statusElement.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+                
+                if (type === 'success') {
+                    setTimeout(() => {
+                        if (statusElement.innerHTML.includes(message)) {
+                            statusElement.innerHTML = '';
+                        }
+                    }, 5000);
+                }
+            }
+            
+            clearForm() {
+                document.getElementById('score1').value = '';
+                document.getElementById('score2').value = '';
+                document.getElementById('period').value = '1';
+                document.getElementById('minutes').value = '';
+                document.getElementById('seconds').value = '';
+                document.getElementById('total-line').value = '';
+                document.getElementById('score-diff').value = '';
+                
+                document.getElementById('predicted-total').textContent = '--';
+                document.getElementById('predicted-pace').textContent = '--';
+                document.getElementById('ai-accuracy').textContent = '--';
+                document.getElementById('confidence').textContent = '--';
+                
+                document.getElementById('confidence-bar').style.width = '0%';
+                document.getElementById('confidence-value').textContent = '0%';
+                document.getElementById('recommendation').style.display = 'none';
+                
+                this.showStatus('Форма очищена', 'success');
+            }
+            
+            // Метод для обратной связи и обучения
+            async provideFeedback(actualTotal) {
+                if (!this.currentPrediction) {
+                    this.showStatus('Сначала сделайте прогноз', 'error');
+                    return;
+                }
+                
+                const { gameData, predictedTotal, useAI } = this.currentPrediction;
+                
+                if (useAI) {
+                    await this.predictor.addTrainingData(gameData, predictedTotal, actualTotal);
+                    this.showStatus('Спасибо! ИИ обучается на ваших данных', 'success');
+                } else {
+                    this.showStatus('Обратная связь учтена', 'success');
+                }
+                
+                this.predictor.updateStats();
+            }
+        }
+
+        // Инициализация приложения
+        let app;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Ожидаем загрузку TensorFlow.js
+            if (typeof tf !== 'undefined') {
+                await tf.ready();
+                console.log('TensorFlow.js готов к работе');
+            }
+            
+            app = new BasketballAnalysisApp();
         });
+
+        // Глобальные функции для обратной связи
+        window.provideFeedback = function(actualTotal) {
+            if (app) {
+                app.provideFeedback(parseFloat(actualTotal));
+            }
+        };
+
+        // Демонстрационная обратная связь
+        window.demoFeedback = function() {
+            const actualTotal = parseFloat(prompt('Введите реальный тотал матча для обучения ИИ:'));
+            if (!isNaN(actualTotal)) {
+                window.provideFeedback(actualTotal);
+            }
+        };
     </script>
 </body>
 </html>
