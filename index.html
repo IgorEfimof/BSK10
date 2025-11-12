@@ -1742,10 +1742,10 @@
                 }
                 
                 // Обновляем статистику ML
-                mlAccuracy.textContent = `${(mlData.accuracy * 100).toFixed(1)}%`;
-                mlAdjustment.textContent = `${((mlData.adjustmentFactor - 1) * 100).toFixed(1)}%`;
+                mlAccuracy.textContent = `${(mlData.accuracy * 100).toFixed(2)}%`;
+                mlAdjustment.textContent = `${((mlData.adjustmentFactor - 1) * 100).toFixed(2)}%`;
                 mlDataCount.textContent = mlData.totalPredictions;
-                mlImprovement.textContent = `+${(mlData.accuracy * 15).toFixed(1)}%`;
+                mlImprovement.textContent = `+${(mlData.accuracy * 15).toFixed(2)}%`;
                 
                 // Обновляем статус обучения
                 if (mlData.trainedWithRealData) {
@@ -1827,7 +1827,7 @@
                         // Показываем ML-бейдж и корректировку
                         mlBadge.style.display = 'block';
                         mlCorrection.style.display = 'flex';
-                        mlCorrectionValue.textContent = `${mlBoost > 0 ? '+' : ''}${mlBoost.toFixed(1)}%`;
+                        mlCorrectionValue.textContent = `${mlBoost > 0 ? '+' : ''}${mlBoost.toFixed(2)}%`;
                         recommendationEl.classList.add('ml-enhanced');
                         recommendationEl.classList.add('ml-glow');
                     } else {
@@ -2031,11 +2031,11 @@
                 realScore1Input.value = '';
                 realScore2Input.value = '';
                 
-                alert(`Реальный счет сохранен!\nТочность прогноза: ${predictionAccuracy.toFixed(1)}%\nРекомендация: ${recommendationCorrect ? 'ПРАВИЛЬНАЯ' : 'НЕПРАВИЛЬНАЯ'}`);
+                alert(`Реальный счет сохранен!\nТочность прогноза: ${predictionAccuracy.toFixed(2)}%\nРекомендация: ${recommendationCorrect ? 'ПРАВИЛЬНАЯ' : 'НЕПРАВИЛЬНАЯ'}`);
             }
             
             function updateMLFeedback(predictionAccuracy, recommendationCorrect, predictionError) {
-                predictionAccuracyEl.textContent = `${predictionAccuracy.toFixed(1)}%`;
+                predictionAccuracyEl.textContent = `${predictionAccuracy.toFixed(2)}%`;
                 if (predictionAccuracy >= 90) {
                     predictionAccuracyEl.className = "feedback-value positive";
                 } else if (predictionAccuracy >= 80) {
@@ -2047,7 +2047,7 @@
                 recommendationAccuracyEl.textContent = recommendationCorrect ? "ПРАВИЛЬНАЯ" : "НЕПРАВИЛЬНАЯ";
                 recommendationAccuracyEl.className = recommendationCorrect ? "feedback-value positive" : "feedback-value negative";
                 
-                predictionErrorEl.textContent = `${predictionError.toFixed(1)} очков`;
+                predictionErrorEl.textContent = `${predictionError.toFixed(2)} очков`;
                 if (predictionError <= 5) {
                     predictionErrorEl.className = "feedback-value positive";
                 } else if (predictionError <= 10) {
@@ -2112,7 +2112,7 @@
                 updateMLStatus();
                 
                 // Показываем результат обучения
-                alert(`ML модель обучена!\nТочность: ${(accuracy * 100).toFixed(1)}%\nСредняя ошибка: ${avgError.toFixed(1)} очков\nКорректировка: +${((mlData.adjustmentFactor - 1) * 100).toFixed(1)}%`);
+                alert(`ML модель обучена!\nТочность: ${(accuracy * 100).toFixed(2)}%\nСредняя ошибка: ${avgError.toFixed(2)} очков\nКорректировка: +${((mlData.adjustmentFactor - 1) * 100).toFixed(2)}%`);
                 
                 // Пересчитываем текущий прогноз с обновленной ML моделью
                 autoCalculate();
@@ -2122,7 +2122,7 @@
                 recommendationTextEl.textContent = recommendation;
                 recommendationEl.className = `recommendation ${type}`;
                 confidenceBarEl.style.width = `${confidence}%`;
-                confidenceValueEl.textContent = `${confidence}%`;
+                confidenceValueEl.textContent = `${confidence.toFixed(2)}%`;
                 
                 // Анимация для рекомендации
                 recommendationEl.classList.add('success-animation');
@@ -2154,7 +2154,7 @@
                 
                 // Обновляем детали
                 paceValueEl.textContent = `${currentPace.toFixed(2)} оч/мин`;
-                timeLeftEl.textContent = `${totalRemainingMinutes.toFixed(1)} мин`;
+                timeLeftEl.textContent = `${totalRemainingMinutes.toFixed(2)} мин`;
                 thresholdValueEl.textContent = "5.0 оч";
             }
             
@@ -2203,7 +2203,7 @@
                             <div class="history-prediction">${item.score} | ${item.recommendation} ${item.mlEnhanced ? '🤖' : ''}</div>
                             <div class="history-details">Прогноз: ${item.predictedTotal.toFixed(1)} vs Линия: ${item.lineTotal}</div>
                         </div>
-                        <div class="history-confidence ${confidenceClass}">${item.confidence}%</div>
+                        <div class="history-confidence ${confidenceClass}">${item.confidence.toFixed(2)}%</div>
                     `;
                     
                     historyListEl.appendChild(historyItemEl);
