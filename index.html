@@ -165,6 +165,8 @@
             transition: border-color 0.3s;
             -webkit-appearance: none;
             appearance: none;
+            caret-color: transparent;
+            cursor: pointer;
         }
         
         .input-field:focus {
@@ -849,77 +851,6 @@
             line-height: 1.5;
         }
         
-        /* Адаптация для iPhone */
-        @media (max-width: 500px) {
-            body {
-                padding: 10px;
-                align-items: flex-start;
-            }
-            
-            .container {
-                max-width: 100%;
-            }
-            
-            .input-grid {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-            
-            .result-grid {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-            
-            .league-options {
-                flex-direction: column;
-            }
-            
-            .confidence-meter {
-                flex-direction: column;
-                gap: 8px;
-            }
-            
-            .confidence-bar {
-                width: 100%;
-            }
-            
-            .details-grid {
-                grid-template-columns: 1fr;
-                gap: 5px;
-            }
-            
-            .ml-stats {
-                grid-template-columns: 1fr;
-            }
-            
-            .history-list {
-                max-height: 150px;
-            }
-            
-            .modal-content {
-                padding: 20px;
-            }
-            
-            .header-controls {
-                gap: 5px;
-            }
-        }
-        
-        /* Для цифровой клавиатуры на iOS */
-        input[type="number"] {
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        
-        input[inputmode="numeric"] {
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        
-        .theme-transition {
-            transition: all 0.5s ease;
-        }
-        
         /* Стили для формы реального счета */
         .real-score-section {
             margin-top: 15px;
@@ -994,6 +925,175 @@
         .feedback-value.negative {
             color: var(--danger);
         }
+        
+        /* Кастомная клавиатура */
+        .custom-keyboard {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 10px;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .custom-keyboard.active {
+            transform: translateY(0);
+        }
+        
+        .keyboard-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .keyboard-btn {
+            flex: 1;
+            margin: 0 4px;
+            height: 50px;
+            border: none;
+            border-radius: 8px;
+            background: var(--light);
+            color: var(--text-color);
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .keyboard-btn:active {
+            background: var(--primary);
+            color: white;
+            transform: scale(0.95);
+        }
+        
+        .keyboard-btn.double {
+            flex: 2;
+        }
+        
+        .keyboard-btn.action {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .keyboard-btn.action:active {
+            background: var(--secondary);
+        }
+        
+        .keyboard-btn.special {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .keyboard-btn.special:active {
+            background: #e67e22;
+        }
+        
+        .keyboard-close {
+            position: absolute;
+            top: -40px;
+            right: 10px;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .keyboard-close:active {
+            background: var(--light);
+        }
+        
+        /* Адаптация для iPhone */
+        @media (max-width: 500px) {
+            body {
+                padding: 10px;
+                align-items: flex-start;
+            }
+            
+            .container {
+                max-width: 100%;
+            }
+            
+            .input-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .result-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .league-options {
+                flex-direction: column;
+            }
+            
+            .confidence-meter {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .confidence-bar {
+                width: 100%;
+            }
+            
+            .details-grid {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+            
+            .ml-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .history-list {
+                max-height: 150px;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .header-controls {
+                gap: 5px;
+            }
+            
+            .keyboard-btn {
+                height: 45px;
+                font-size: 1.1rem;
+            }
+        }
+        
+        /* Для цифровой клавиатуры на iOS */
+        input[type="number"] {
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        input[inputmode="numeric"] {
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        .theme-transition {
+            transition: all 0.5s ease;
+        }
     </style>
 </head>
 <body>
@@ -1028,9 +1128,9 @@
                     <div class="input-group">
                         <label class="input-label">Текущий счет</label>
                         <div class="input-row">
-                            <input type="number" class="input-field" id="score1" placeholder="0" min="0" inputmode="numeric">
+                            <input type="text" class="input-field" id="score1" placeholder="0" min="0" inputmode="none" readonly>
                             <div class="input-icon">:</div>
-                            <input type="number" class="input-field" id="score2" placeholder="0" min="0" inputmode="numeric">
+                            <input type="text" class="input-field" id="score2" placeholder="0" min="0" inputmode="none" readonly>
                         </div>
                     </div>
                     
@@ -1047,15 +1147,15 @@
                     <div class="input-group">
                         <label class="input-label">Время в четверти</label>
                         <div class="input-row">
-                            <input type="number" class="input-field" id="minutes" placeholder="мин" min="0" max="12" inputmode="numeric">
+                            <input type="text" class="input-field" id="minutes" placeholder="мин" min="0" max="12" inputmode="none" readonly>
                             <div class="input-icon">:</div>
-                            <input type="number" class="input-field" id="seconds" placeholder="сек" min="0" max="59" inputmode="numeric">
+                            <input type="text" class="input-field" id="seconds" placeholder="сек" min="0" max="59" inputmode="none" readonly>
                         </div>
                     </div>
                     
                     <div class="input-group">
                         <label class="input-label">Тотал букмекера</label>
-                        <input type="number" class="input-field" id="line-total" placeholder="215.5" step="0.1" inputmode="decimal">
+                        <input type="text" class="input-field" id="line-total" placeholder="215.5" step="0.1" inputmode="none" readonly>
                     </div>
                 </div>
                 
@@ -1102,9 +1202,9 @@
             <div class="real-score-section">
                 <div class="input-label">Реальный итоговый счет (после матча)</div>
                 <div class="real-score-inputs">
-                    <input type="number" class="input-field" id="real-score1" placeholder="0" min="0" inputmode="numeric">
+                    <input type="text" class="input-field" id="real-score1" placeholder="0" min="0" inputmode="none" readonly>
                     <div class="input-icon">:</div>
-                    <input type="number" class="input-field" id="real-score2" placeholder="0" min="0" inputmode="numeric">
+                    <input type="text" class="input-field" id="real-score2" placeholder="0" min="0" inputmode="none" readonly>
                     <button class="save-real-score-btn" id="save-real-score-btn">
                         <i class="fas fa-save"></i> Сохранить
                     </button>
@@ -1213,6 +1313,44 @@
                 <button class="btn btn-secondary" id="clear-btn">Очистить</button>
                 <button class="btn btn-ml" id="ml-train-btn">Обучить ML</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Кастомная клавиатура -->
+    <div class="custom-keyboard" id="custom-keyboard">
+        <button class="keyboard-close" id="keyboard-close">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="keyboard-row">
+            <button class="keyboard-btn" data-value="1">1</button>
+            <button class="keyboard-btn" data-value="2">2</button>
+            <button class="keyboard-btn" data-value="3">3</button>
+            <button class="keyboard-btn action" data-action="backspace">
+                <i class="fas fa-backspace"></i>
+            </button>
+        </div>
+        <div class="keyboard-row">
+            <button class="keyboard-btn" data-value="4">4</button>
+            <button class="keyboard-btn" data-value="5">5</button>
+            <button class="keyboard-btn" data-value="6">6</button>
+            <button class="keyboard-btn action" data-action="clear">
+                C
+            </button>
+        </div>
+        <div class="keyboard-row">
+            <button class="keyboard-btn" data-value="7">7</button>
+            <button class="keyboard-btn" data-value="8">8</button>
+            <button class="keyboard-btn" data-value="9">9</button>
+            <button class="keyboard-btn special" data-action="done">
+                Готово
+            </button>
+        </div>
+        <div class="keyboard-row">
+            <button class="keyboard-btn double" data-value="0">0</button>
+            <button class="keyboard-btn" data-value=".">.</button>
+            <button class="keyboard-btn action" data-action="delete">
+                <i class="fas fa-trash"></i>
+            </button>
         </div>
     </div>
 
@@ -1383,6 +1521,11 @@
             const leagueTypeEl = document.getElementById('league-type');
             const historyListEl = document.getElementById('history-list');
             
+            // Элементы кастомной клавиатуры
+            const customKeyboard = document.getElementById('custom-keyboard');
+            const keyboardClose = document.getElementById('keyboard-close');
+            const keyboardButtons = document.querySelectorAll('.keyboard-btn');
+            
             // Переменные состояния
             let currentLeague = 'nba';
             let currentBetType = 'over';
@@ -1399,6 +1542,7 @@
             };
             let isDarkTheme = false;
             let lastPrediction = null;
+            let activeInput = null;
             
             // Инициализация
             initializeApp();
@@ -1431,9 +1575,10 @@
                 });
                 
                 // Обработчики для полей ввода
-                const inputFields = [score1Input, score2Input, periodSelect, minutesInput, secondsInput, lineTotalInput];
+                const inputFields = [score1Input, score2Input, minutesInput, secondsInput, lineTotalInput, realScore1Input, realScore2Input];
                 inputFields.forEach(field => {
-                    field.addEventListener('input', autoCalculate);
+                    field.addEventListener('focus', showCustomKeyboard);
+                    field.addEventListener('click', showCustomKeyboard);
                 });
                 
                 // Кнопки действий
@@ -1462,12 +1607,79 @@
                     }
                 });
                 
+                // Кастомная клавиатура
+                keyboardClose.addEventListener('click', hideCustomKeyboard);
+                keyboardButtons.forEach(button => {
+                    button.addEventListener('click', handleKeyboardInput);
+                });
+                
                 // Загрузка истории и ML данных из localStorage
                 loadHistory();
                 loadMLData();
                 
                 // Первоначальный расчет
                 autoCalculate();
+            }
+            
+            function showCustomKeyboard(e) {
+                activeInput = e.target;
+                customKeyboard.classList.add('active');
+                
+                // Скрываем точку для целочисленных полей
+                const decimalButton = customKeyboard.querySelector('[data-value="."]');
+                if (activeInput === lineTotalInput) {
+                    decimalButton.style.display = 'flex';
+                } else {
+                    decimalButton.style.display = 'none';
+                }
+            }
+            
+            function hideCustomKeyboard() {
+                customKeyboard.classList.remove('active');
+                activeInput = null;
+            }
+            
+            function handleKeyboardInput(e) {
+                if (!activeInput) return;
+                
+                const value = e.currentTarget.getAttribute('data-value');
+                const action = e.currentTarget.getAttribute('data-action');
+                
+                if (value) {
+                    // Добавляем цифру или точку
+                    if (activeInput.value === '0' && value !== '.') {
+                        activeInput.value = value;
+                    } else {
+                        activeInput.value += value;
+                    }
+                    
+                    // Проверяем валидность для целочисленных полей
+                    if (activeInput !== lineTotalInput) {
+                        activeInput.value = activeInput.value.replace('.', '');
+                    }
+                } else if (action) {
+                    switch(action) {
+                        case 'backspace':
+                            // Удаляем последний символ
+                            activeInput.value = activeInput.value.slice(0, -1);
+                            break;
+                        case 'clear':
+                            // Очищаем поле
+                            activeInput.value = '';
+                            break;
+                        case 'delete':
+                            // Удаляем все содержимое
+                            activeInput.value = '';
+                            break;
+                        case 'done':
+                            // Закрываем клавиатуру
+                            hideCustomKeyboard();
+                            break;
+                    }
+                }
+                
+                // Вызываем событие input для обновления расчетов
+                activeInput.dispatchEvent(new Event('input', { bubbles: true }));
             }
             
             function toggleTheme() {
@@ -2062,6 +2274,9 @@
                 recommendationAccuracyEl.className = 'feedback-value neutral';
                 predictionErrorEl.textContent = '--';
                 predictionErrorEl.className = 'feedback-value neutral';
+                
+                // Закрываем клавиатуру если открыта
+                hideCustomKeyboard();
             }
             
             // Инициализация информации о лиге
