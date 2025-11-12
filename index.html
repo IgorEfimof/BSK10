@@ -919,6 +919,81 @@
         .theme-transition {
             transition: all 0.5s ease;
         }
+        
+        /* Стили для формы реального счета */
+        .real-score-section {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .real-score-inputs {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 8px;
+        }
+        
+        .real-score-inputs .input-field {
+            flex: 1;
+        }
+        
+        .save-real-score-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .save-real-score-btn:hover {
+            background: #2980b9;
+        }
+        
+        .ml-feedback-section {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(155, 89, 182, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #9b59b6;
+        }
+        
+        .ml-feedback-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .feedback-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: 0.85rem;
+        }
+        
+        .feedback-label {
+            color: var(--text-color);
+        }
+        
+        .feedback-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .feedback-value.positive {
+            color: var(--success);
+        }
+        
+        .feedback-value.negative {
+            color: var(--danger);
+        }
     </style>
 </head>
 <body>
@@ -1020,6 +1095,40 @@
                             <span>Улучшение:</span>
                             <span class="ml-stat-value" id="ml-improvement">+--%</span>
                         </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="real-score-section">
+                <div class="input-label">Реальный итоговый счет (после матча)</div>
+                <div class="real-score-inputs">
+                    <input type="number" class="input-field" id="real-score1" placeholder="0" min="0" inputmode="numeric">
+                    <div class="input-icon">:</div>
+                    <input type="number" class="input-field" id="real-score2" placeholder="0" min="0" inputmode="numeric">
+                    <button class="save-real-score-btn" id="save-real-score-btn">
+                        <i class="fas fa-save"></i> Сохранить
+                    </button>
+                </div>
+            </div>
+            
+            <div class="ml-feedback-section">
+                <div class="input-label">ML-обратная связь</div>
+                <div class="ml-feedback-grid">
+                    <div class="feedback-item">
+                        <span class="feedback-label">Прогноз vs Реальность:</span>
+                        <span class="feedback-value neutral" id="prediction-accuracy">--</span>
+                    </div>
+                    <div class="feedback-item">
+                        <span class="feedback-label">Рекомендация:</span>
+                        <span class="feedback-value neutral" id="recommendation-accuracy">--</span>
+                    </div>
+                    <div class="feedback-item">
+                        <span class="feedback-label">Ошибка прогноза:</span>
+                        <span class="feedback-value neutral" id="prediction-error">--</span>
+                    </div>
+                    <div class="feedback-item">
+                        <span class="feedback-label">Статус обучения:</span>
+                        <span class="feedback-value neutral" id="training-status">Не обучено</span>
                     </div>
                 </div>
             </div>
@@ -1143,6 +1252,7 @@
                     <li><strong>Выберите тип ставки</strong> - ТБ (тотал больше) или ТМ (тотал меньше)</li>
                     <li><strong>Включите ML-корректировку</strong> для AI-улучшения точности</li>
                     <li><strong>Нажмите "Рассчитать"</strong> - получите прогноз и рекомендацию</li>
+                    <li><strong>После матча введите реальный счет</strong> для обучения ML-модели</li>
                 </ol>
             </div>
             
@@ -1208,7 +1318,7 @@
                     <div class="tip-item">
                         <div class="tip-icon"><i class="fas fa-chart-bar"></i></div>
                         <div class="tip-text">
-                            <strong>Следите за темпом игры</strong> - если темп значительно выше среднего, прогноз будет точнее
+                            <strong>Вводите реальные результаты</strong> - это позволяет ML-модели обучаться и улучшать точность прогнозов
                         </div>
                     </div>
                 </div>
@@ -1249,6 +1359,17 @@
             const mlCorrection = document.getElementById('ml-correction');
             const mlCorrectionValue = document.getElementById('ml-correction-value');
             
+            // Элементы реального счета
+            const realScore1Input = document.getElementById('real-score1');
+            const realScore2Input = document.getElementById('real-score2');
+            const saveRealScoreBtn = document.getElementById('save-real-score-btn');
+            
+            // Элементы обратной связи ML
+            const predictionAccuracyEl = document.getElementById('prediction-accuracy');
+            const recommendationAccuracyEl = document.getElementById('recommendation-accuracy');
+            const predictionErrorEl = document.getElementById('prediction-error');
+            const trainingStatusEl = document.getElementById('training-status');
+            
             // Элементы результатов
             const predictedTotalEl = document.getElementById('predicted-total');
             const deviationValueEl = document.getElementById('deviation-value');
@@ -1273,9 +1394,11 @@
                 correctPredictions: 0,
                 adjustmentFactor: 1.0,
                 leagueAccuracy: {},
-                recentPerformance: []
+                recentPerformance: [],
+                trainedWithRealData: false
             };
             let isDarkTheme = false;
+            let lastPrediction = null;
             
             // Инициализация
             initializeApp();
@@ -1317,6 +1440,7 @@
                 calculateBtn.addEventListener('click', performCalculation);
                 clearBtn.addEventListener('click', clearForm);
                 mlTrainBtn.addEventListener('click', trainMLModel);
+                saveRealScoreBtn.addEventListener('click', saveRealScore);
                 
                 // ML переключатель
                 mlToggle.addEventListener('change', function() {
@@ -1410,6 +1534,15 @@
                 mlAdjustment.textContent = `${((mlData.adjustmentFactor - 1) * 100).toFixed(1)}%`;
                 mlDataCount.textContent = mlData.totalPredictions;
                 mlImprovement.textContent = `+${(mlData.accuracy * 15).toFixed(1)}%`;
+                
+                // Обновляем статус обучения
+                if (mlData.trainedWithRealData) {
+                    trainingStatusEl.textContent = "Обучена";
+                    trainingStatusEl.className = "feedback-value positive";
+                } else {
+                    trainingStatusEl.textContent = "Не обучена";
+                    trainingStatusEl.className = "feedback-value negative";
+                }
             }
             
             function autoCalculate() {
@@ -1441,6 +1574,19 @@
                 predictedTotalEl.textContent = predictedTotal.toFixed(1);
                 predictedTotalEl.classList.add('success-animation');
                 setTimeout(() => predictedTotalEl.classList.remove('success-animation'), 500);
+                
+                // Сохраняем последний прогноз для обучения ML
+                lastPrediction = {
+                    score1: score1,
+                    score2: score2,
+                    period: period,
+                    minutes: minutes,
+                    seconds: seconds,
+                    lineTotal: lineTotal,
+                    predictedTotal: predictedTotal,
+                    betType: currentBetType,
+                    timestamp: new Date()
+                };
                 
                 // Если введен тотал букмекера, рассчитываем рекомендацию
                 if (lineTotal > 0) {
@@ -1614,9 +1760,99 @@
                 };
             }
             
+            function saveRealScore() {
+                const realScore1 = parseInt(realScore1Input.value) || 0;
+                const realScore2 = parseInt(realScore2Input.value) || 0;
+                
+                if (realScore1 === 0 && realScore2 === 0) {
+                    alert('Введите реальный итоговый счет матча');
+                    return;
+                }
+                
+                if (!lastPrediction) {
+                    alert('Сначала выполните расчет прогноза');
+                    return;
+                }
+                
+                const realTotal = realScore1 + realScore2;
+                const predictionError = Math.abs(lastPrediction.predictedTotal - realTotal);
+                
+                // Определяем, была ли рекомендация правильной
+                let recommendationCorrect = false;
+                if ((lastPrediction.betType === 'over' && realTotal > lastPrediction.lineTotal) ||
+                    (lastPrediction.betType === 'under' && realTotal < lastPrediction.lineTotal)) {
+                    recommendationCorrect = true;
+                }
+                
+                // Определяем точность прогноза
+                const predictionAccuracy = Math.max(0, 100 - (predictionError / realTotal * 100));
+                
+                // Обновляем ML данные
+                mlData.totalPredictions++;
+                if (recommendationCorrect) {
+                    mlData.correctPredictions++;
+                }
+                mlData.accuracy = mlData.correctPredictions / mlData.totalPredictions;
+                mlData.adjustmentFactor = 1.0 + (mlData.accuracy * 0.3);
+                mlData.trainedWithRealData = true;
+                
+                // Сохраняем производительность
+                mlData.recentPerformance.push(recommendationCorrect ? 1 : 0);
+                if (mlData.recentPerformance.length > 5) {
+                    mlData.recentPerformance.shift();
+                }
+                
+                // Обновляем точность для текущей лиги
+                if (!mlData.leagueAccuracy[currentLeague]) {
+                    mlData.leagueAccuracy[currentLeague] = { accuracy: 0, factor: 1.0 };
+                }
+                mlData.leagueAccuracy[currentLeague].accuracy = mlData.accuracy;
+                mlData.leagueAccuracy[currentLeague].factor = 0.9 + (mlData.accuracy * 0.2);
+                
+                // Обновляем обратную связь
+                updateMLFeedback(predictionAccuracy, recommendationCorrect, predictionError);
+                
+                saveMLData();
+                updateMLStatus();
+                
+                // Очищаем поля реального счета
+                realScore1Input.value = '';
+                realScore2Input.value = '';
+                
+                alert(`Реальный счет сохранен!\nТочность прогноза: ${predictionAccuracy.toFixed(1)}%\nРекомендация: ${recommendationCorrect ? 'ПРАВИЛЬНАЯ' : 'НЕПРАВИЛЬНАЯ'}`);
+            }
+            
+            function updateMLFeedback(predictionAccuracy, recommendationCorrect, predictionError) {
+                predictionAccuracyEl.textContent = `${predictionAccuracy.toFixed(1)}%`;
+                if (predictionAccuracy >= 90) {
+                    predictionAccuracyEl.className = "feedback-value positive";
+                } else if (predictionAccuracy >= 80) {
+                    predictionAccuracyEl.className = "feedback-value";
+                } else {
+                    predictionAccuracyEl.className = "feedback-value negative";
+                }
+                
+                recommendationAccuracyEl.textContent = recommendationCorrect ? "ПРАВИЛЬНАЯ" : "НЕПРАВИЛЬНАЯ";
+                recommendationAccuracyEl.className = recommendationCorrect ? "feedback-value positive" : "feedback-value negative";
+                
+                predictionErrorEl.textContent = `${predictionError.toFixed(1)} очков`;
+                if (predictionError <= 5) {
+                    predictionErrorEl.className = "feedback-value positive";
+                } else if (predictionError <= 10) {
+                    predictionErrorEl.className = "feedback-value";
+                } else {
+                    predictionErrorEl.className = "feedback-value negative";
+                }
+            }
+            
             function trainMLModel() {
                 if (calculationHistory.length < 3) {
                     alert('Нужно как минимум 3 расчета в истории для обучения ML модели');
+                    return;
+                }
+                
+                if (!mlData.trainedWithRealData) {
+                    alert('Для обучения ML модели необходимо сохранить реальные результаты матчей');
                     return;
                 }
                 
@@ -1802,6 +2038,8 @@
                 minutesInput.value = '';
                 secondsInput.value = '';
                 lineTotalInput.value = '';
+                realScore1Input.value = '';
+                realScore2Input.value = '';
                 
                 predictedTotalEl.textContent = '--';
                 deviationValueEl.textContent = '--';
@@ -1816,6 +2054,14 @@
                 mlCorrection.style.display = 'none';
                 recommendationEl.classList.remove('ml-enhanced');
                 recommendationEl.classList.remove('ml-glow');
+                
+                // Сбрасываем обратную связь ML
+                predictionAccuracyEl.textContent = '--';
+                predictionAccuracyEl.className = 'feedback-value neutral';
+                recommendationAccuracyEl.textContent = '--';
+                recommendationAccuracyEl.className = 'feedback-value neutral';
+                predictionErrorEl.textContent = '--';
+                predictionErrorEl.className = 'feedback-value neutral';
             }
             
             // Инициализация информации о лиге
