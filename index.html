@@ -604,6 +604,12 @@
             justify-content: space-between;
             align-items: center;
             font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .history-item:hover {
+            background: rgba(52, 152, 219, 0.05);
         }
         
         .history-item:last-child {
@@ -1060,6 +1066,118 @@
             background: var(--light);
         }
         
+        /* Модальное окно деталей истории */
+        .history-detail-modal .modal-content {
+            max-width: 450px;
+        }
+        
+        .history-detail-section {
+            margin-bottom: 20px;
+        }
+        
+        .history-detail-title {
+            color: var(--primary);
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .history-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background: rgba(52, 152, 219, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .history-detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .history-detail-label {
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        
+        .history-detail-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .history-result-section {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        
+        .history-result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .history-result-card {
+            padding: 10px;
+            border-radius: 8px;
+            background: var(--card-bg);
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .history-recommendation {
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            margin-top: 15px;
+        }
+        
+        .history-recommendation.strong-buy {
+            background: linear-gradient(90deg, var(--success), #2ecc71);
+        }
+        
+        .history-recommendation.buy {
+            background: linear-gradient(90deg, var(--info), #3498db);
+        }
+        
+        .history-recommendation.avoid {
+            background: linear-gradient(90deg, var(--danger), #c0392b);
+        }
+        
+        .history-recommendation.ml-enhanced {
+            background: linear-gradient(90deg, #9b59b6, #8e44ad);
+        }
+        
+        .history-confidence-meter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        
+        .history-confidence-bar {
+            width: 100px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .history-confidence-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: white;
+        }
+        
         /* Адаптация для iPhone */
         @media (max-width: 500px) {
             .container {
@@ -1113,6 +1231,14 @@
             .keyboard-btn {
                 height: 45px;
                 font-size: 1.1rem;
+            }
+            
+            .history-detail-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .history-result-grid {
+                grid-template-columns: 1fr;
             }
         }
         
@@ -1503,6 +1629,79 @@
         </div>
     </div>
 
+    <!-- Модальное окно деталей истории -->
+    <div class="modal-overlay history-detail-modal" id="history-detail-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="history-modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="modal-title">Детали расчета</h2>
+            
+            <div class="history-detail-section">
+                <h3 class="history-detail-title"><i class="fas fa-info-circle"></i> Исходные данные</h3>
+                <div class="history-detail-grid">
+                    <div class="history-detail-item">
+                        <span class="history-detail-label">Счет:</span>
+                        <span class="history-detail-value" id="detail-score">0:0</span>
+                    </div>
+                    <div class="history-detail-item">
+                        <span class="history-detail-label">Период:</span>
+                        <span class="history-detail-value" id="detail-period">1-я четверть</span>
+                    </div>
+                    <div class="history-detail-item">
+                        <span class="history-detail-label">Время в четверти:</span>
+                        <span class="history-detail-value" id="detail-time">0:00</span>
+                    </div>
+                    <div class="history-detail-item">
+                        <span class="history-detail-label">Лига:</span>
+                        <span class="history-detail-value" id="detail-league">NBA</span>
+                    </div>
+                    <div class="history-detail-item">
+                        <span class="history-detail-label">Тотал букмекера:</span>
+                        <span class="history-detail-value" id="detail-line-total">0</span>
+                    </div>
+                    <div class="history-detail-item">
+                        <span class="history-detail-label">Тип ставки:</span>
+                        <span class="history-detail-value" id="detail-bet-type">ТБ</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="history-detail-section">
+                <h3 class="history-detail-title"><i class="fas fa-chart-bar"></i> Результаты анализа</h3>
+                <div class="history-result-section">
+                    <div class="history-result-grid">
+                        <div class="history-result-card">
+                            <div class="result-title">Прогнозируемый тотал</div>
+                            <div class="result-value neutral" id="detail-predicted-total">--</div>
+                        </div>
+                        
+                        <div class="history-result-card">
+                            <div class="result-title">Отклонение от линии</div>
+                            <div class="result-value neutral" id="detail-deviation">--</div>
+                        </div>
+                    </div>
+                    
+                    <div class="history-recommendation" id="detail-recommendation">
+                        <div class="recommendation-title" id="detail-recommendation-text">Введите данные для расчета</div>
+                        <div class="history-confidence-meter">
+                            <span class="confidence-text">Уверенность:</span>
+                            <div class="history-confidence-bar">
+                                <div class="history-confidence-fill" id="detail-confidence-bar" style="width: 0%"></div>
+                            </div>
+                            <span class="confidence-value" id="detail-confidence-value">0%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="ml-correction" id="detail-ml-correction" style="display: none;">
+                        <span>ML-корректировка уверенности:</span>
+                        <span class="ml-stat-value" id="detail-ml-correction-value">+0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Элементы DOM
@@ -1561,6 +1760,24 @@
             const thresholdValueEl = document.getElementById('threshold-value');
             const leagueTypeEl = document.getElementById('league-type');
             const historyListEl = document.getElementById('history-list');
+            
+            // Элементы модального окна деталей истории
+            const historyDetailModal = document.getElementById('history-detail-modal');
+            const historyModalClose = document.getElementById('history-modal-close');
+            const detailScoreEl = document.getElementById('detail-score');
+            const detailPeriodEl = document.getElementById('detail-period');
+            const detailTimeEl = document.getElementById('detail-time');
+            const detailLeagueEl = document.getElementById('detail-league');
+            const detailLineTotalEl = document.getElementById('detail-line-total');
+            const detailBetTypeEl = document.getElementById('detail-bet-type');
+            const detailPredictedTotalEl = document.getElementById('detail-predicted-total');
+            const detailDeviationEl = document.getElementById('detail-deviation');
+            const detailRecommendationEl = document.getElementById('detail-recommendation');
+            const detailRecommendationTextEl = document.getElementById('detail-recommendation-text');
+            const detailConfidenceBarEl = document.getElementById('detail-confidence-bar');
+            const detailConfidenceValueEl = document.getElementById('detail-confidence-value');
+            const detailMlCorrectionEl = document.getElementById('detail-ml-correction');
+            const detailMlCorrectionValueEl = document.getElementById('detail-ml-correction-value');
             
             // Элементы кастомной клавиатуры
             const customKeyboard = document.getElementById('custom-keyboard');
@@ -1646,6 +1863,14 @@
                 instructionModal.addEventListener('click', function(e) {
                     if (e.target === instructionModal) {
                         closeInstructionModal();
+                    }
+                });
+                
+                // Модальное окно деталей истории
+                historyModalClose.addEventListener('click', closeHistoryDetailModal);
+                historyDetailModal.addEventListener('click', function(e) {
+                    if (e.target === historyDetailModal) {
+                        closeHistoryDetailModal();
                     }
                 });
                 
@@ -1786,6 +2011,77 @@
                 document.body.style.overflow = 'auto';
             }
             
+            function openHistoryDetailModal(historyItem) {
+                // Заполняем модальное окно данными из истории
+                detailScoreEl.textContent = historyItem.score;
+                
+                // Определяем название периода
+                let periodName = '';
+                switch(historyItem.period) {
+                    case 1: periodName = '1-я четверть'; break;
+                    case 2: periodName = '2-я четверть'; break;
+                    case 3: periodName = '3-я четверть'; break;
+                    case 4: periodName = '4-я четверть'; break;
+                }
+                detailPeriodEl.textContent = periodName;
+                
+                // Форматируем время
+                detailTimeEl.textContent = `${historyItem.minutes}:${historyItem.seconds.toString().padStart(2, '0')}`;
+                
+                // Определяем название лиги
+                let leagueName = '';
+                switch(historyItem.league) {
+                    case 'nba': leagueName = 'NBA'; break;
+                    case 'fibа': leagueName = 'ФИБА'; break;
+                    case 'cyber': leagueName = 'Кибер'; break;
+                }
+                detailLeagueEl.textContent = leagueName;
+                
+                detailLineTotalEl.textContent = historyItem.lineTotal;
+                detailBetTypeEl.textContent = historyItem.betType === 'over' ? 'ТБ' : 'ТМ';
+                detailPredictedTotalEl.textContent = historyItem.predictedTotal.toFixed(1);
+                
+                // Рассчитываем отклонение
+                const deviation = historyItem.predictedTotal - historyItem.lineTotal;
+                detailDeviationEl.textContent = `${deviation > 0 ? '+' : ''}${deviation.toFixed(1)}`;
+                
+                // Устанавливаем цвет отклонения
+                if (deviation > 5) {
+                    detailDeviationEl.className = 'result-value positive';
+                } else if (deviation < -5) {
+                    detailDeviationEl.className = 'result-value negative';
+                } else {
+                    detailDeviationEl.className = 'result-value neutral';
+                }
+                
+                // Устанавливаем рекомендацию
+                detailRecommendationTextEl.textContent = historyItem.recommendation;
+                detailRecommendationEl.className = `history-recommendation ${historyItem.type}`;
+                
+                // Устанавливаем уверенность
+                detailConfidenceBarEl.style.width = `${historyItem.confidence}%`;
+                detailConfidenceValueEl.textContent = `${historyItem.confidence.toFixed(2)}%`;
+                
+                // Показываем ML-корректировку если есть
+                if (historyItem.mlBoost && historyItem.mlBoost > 0) {
+                    detailMlCorrectionEl.style.display = 'flex';
+                    detailMlCorrectionValueEl.textContent = `+${historyItem.mlBoost.toFixed(2)}%`;
+                    detailRecommendationEl.classList.add('ml-enhanced');
+                } else {
+                    detailMlCorrectionEl.style.display = 'none';
+                    detailRecommendationEl.classList.remove('ml-enhanced');
+                }
+                
+                // Открываем модальное окно
+                historyDetailModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+            
+            function closeHistoryDetailModal() {
+                historyDetailModal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+            
             function updateLeagueInfo() {
                 let leagueName = '';
                 let periodMinutes = 0;
@@ -1919,7 +2215,7 @@
                     
                     // Сохраняем в историю если нужно
                     if (saveToHistory) {
-                        saveToHistoryList(score1, score2, predictedTotal, lineTotal, currentBetType, confidenceResult, mlBoost);
+                        saveToHistoryList(score1, score2, period, minutes, seconds, predictedTotal, lineTotal, currentBetType, confidenceResult, mlBoost);
                     }
                 } else {
                     deviationValueEl.textContent = '--';
@@ -2235,10 +2531,14 @@
                 thresholdValueEl.textContent = "5.0 оч";
             }
             
-            function saveToHistoryList(score1, score2, predictedTotal, lineTotal, betType, confidenceResult, mlBoost) {
+            function saveToHistoryList(score1, score2, period, minutes, seconds, predictedTotal, lineTotal, betType, confidenceResult, mlBoost) {
                 const historyItem = {
                     id: Date.now(),
                     score: `${score1}:${score2}`,
+                    period: period,
+                    minutes: minutes,
+                    seconds: seconds,
+                    league: currentLeague,
                     predictedTotal: predictedTotal,
                     lineTotal: lineTotal,
                     betType: betType,
@@ -2282,6 +2582,11 @@
                         </div>
                         <div class="history-confidence ${confidenceClass}">${item.confidence.toFixed(2)}%</div>
                     `;
+                    
+                    // Добавляем обработчик клика для открытия деталей
+                    historyItemEl.addEventListener('click', function() {
+                        openHistoryDetailModal(item);
+                    });
                     
                     historyListEl.appendChild(historyItemEl);
                 });
