@@ -43,10 +43,25 @@
             --info: #3498db;
             --light: #34495e;
             --dark: #ecf0f1;
-            --background: linear-gradient(135deg, #2c3e50, #1a1a2e);
-            --card-bg: rgba(44, 62, 80, 0.95);
+            --background: linear-gradient(135deg, #1a1a2e, #0d0d1a);
+            --card-bg: rgba(26, 26, 46, 0.95);
             --text-color: #ecf0f1;
-            --border-color: #4a6572;
+            --border-color: #2c3e50;
+        }
+        
+        .bookmaker-theme {
+            --primary: #1a5fb4;
+            --secondary: #c64600;
+            --success: #26a269;
+            --danger: #c01c28;
+            --warning: #e5a50a;
+            --info: #1a5fb4;
+            --light: #f6f5f4;
+            --dark: #241f31;
+            --background: #f6f5f4;
+            --card-bg: #ffffff;
+            --text-color: #241f31;
+            --border-color: #deddda;
         }
         
         html {
@@ -111,7 +126,7 @@
             gap: 10px;
         }
         
-        .theme-toggle, .info-btn {
+        .theme-toggle, .info-btn, .bookmaker-toggle {
             background: rgba(255, 255, 255, 0.2);
             border: none;
             border-radius: 50%;
@@ -126,7 +141,7 @@
             font-size: 1.2rem;
         }
         
-        .theme-toggle:hover, .info-btn:hover {
+        .theme-toggle:hover, .info-btn:hover, .bookmaker-toggle:hover {
             background: rgba(255, 255, 255, 0.3);
             transform: rotate(30deg);
         }
@@ -1124,6 +1139,9 @@
                 <button class="info-btn" id="info-btn">
                     <i class="fas fa-info"></i>
                 </button>
+                <button class="bookmaker-toggle" id="bookmaker-toggle">
+                    <i class="fas fa-palette"></i>
+                </button>
                 <button class="theme-toggle" id="theme-toggle">
                     <i class="fas fa-moon"></i>
                 </button>
@@ -1490,6 +1508,8 @@
             // Элементы DOM
             const themeToggle = document.getElementById('theme-toggle');
             const themeIcon = themeToggle.querySelector('i');
+            const bookmakerToggle = document.getElementById('bookmaker-toggle');
+            const bookmakerIcon = bookmakerToggle.querySelector('i');
             const infoBtn = document.getElementById('info-btn');
             const instructionModal = document.getElementById('instruction-modal');
             const modalClose = document.getElementById('modal-close');
@@ -1561,7 +1581,7 @@
                 recentPerformance: [],
                 trainedWithRealData: false
             };
-            let isDarkTheme = false;
+            let currentTheme = 'light';
             let lastPrediction = null;
             let activeInput = null;
             
@@ -1618,6 +1638,7 @@
                 
                 // Переключение темы
                 themeToggle.addEventListener('click', toggleTheme);
+                bookmakerToggle.addEventListener('click', toggleBookmakerTheme);
                 
                 // Модальное окно инструкции
                 infoBtn.addEventListener('click', openInstructionModal);
@@ -1637,6 +1658,7 @@
                 // Загрузка истории и ML данных из localStorage
                 loadHistory();
                 loadMLData();
+                loadTheme();
                 
                 // Первоначальный расчет
                 autoCalculate();
@@ -1704,20 +1726,54 @@
             }
             
             function toggleTheme() {
-                isDarkTheme = !isDarkTheme;
-                document.body.classList.toggle('dark-theme', isDarkTheme);
-                
-                // Обновляем иконку
-                if (isDarkTheme) {
+                if (currentTheme === 'light') {
+                    currentTheme = 'dark';
+                    document.body.classList.add('dark-theme');
+                    document.body.classList.remove('bookmaker-theme');
                     themeIcon.classList.remove('fa-moon');
                     themeIcon.classList.add('fa-sun');
                 } else {
+                    currentTheme = 'light';
+                    document.body.classList.remove('dark-theme');
+                    document.body.classList.remove('bookmaker-theme');
                     themeIcon.classList.remove('fa-sun');
                     themeIcon.classList.add('fa-moon');
                 }
                 
                 // Сохраняем настройку темы
-                localStorage.setItem('betAnalyzerTheme', isDarkTheme ? 'dark' : 'light');
+                localStorage.setItem('betAnalyzerTheme', currentTheme);
+            }
+            
+            function toggleBookmakerTheme() {
+                if (currentTheme === 'bookmaker') {
+                    currentTheme = 'light';
+                    document.body.classList.remove('bookmaker-theme');
+                    bookmakerIcon.style.color = 'white';
+                } else {
+                    currentTheme = 'bookmaker';
+                    document.body.classList.remove('dark-theme');
+                    document.body.classList.add('bookmaker-theme');
+                    bookmakerIcon.style.color = '#ffcc00';
+                }
+                
+                // Сохраняем настройку темы
+                localStorage.setItem('betAnalyzerTheme', currentTheme);
+            }
+            
+            function loadTheme() {
+                const savedTheme = localStorage.getItem('betAnalyzerTheme');
+                if (savedTheme) {
+                    currentTheme = savedTheme;
+                    
+                    if (currentTheme === 'dark') {
+                        document.body.classList.add('dark-theme');
+                        themeIcon.classList.remove('fa-moon');
+                        themeIcon.classList.add('fa-sun');
+                    } else if (currentTheme === 'bookmaker') {
+                        document.body.classList.add('bookmaker-theme');
+                        bookmakerIcon.style.color = '#ffcc00';
+                    }
+                }
             }
             
             function openInstructionModal() {
@@ -2253,15 +2309,6 @@
                     mlData = JSON.parse(savedMLData);
                     mlToggle.checked = mlData.enabled;
                     updateMLStatus();
-                }
-                
-                // Загружаем настройку темы
-                const savedTheme = localStorage.getItem('betAnalyzerTheme');
-                if (savedTheme === 'dark') {
-                    isDarkTheme = true;
-                    document.body.classList.add('dark-theme');
-                    themeIcon.classList.remove('fa-moon');
-                    themeIcon.classList.add('fa-sun');
                 }
             }
             
