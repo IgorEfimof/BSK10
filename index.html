@@ -1256,6 +1256,38 @@
         .theme-transition {
             transition: all 0.5s ease;
         }
+        
+        /* Новые стили для сохранения данных формы */
+        .saved-data-notice {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--primary);
+        }
+        
+        .saved-data-notice i {
+            color: var(--success);
+        }
+        
+        .restore-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        
+        .restore-btn:hover {
+            background: #219653;
+        }
     </style>
 </head>
 <body>
@@ -1361,6 +1393,13 @@
                             <span class="ml-stat-value" id="ml-improvement">+--%</span>
                         </div>
                     </div>
+                </div>
+                
+                <!-- Уведомление о сохраненных данных -->
+                <div class="saved-data-notice" id="saved-data-notice" style="display: none;">
+                    <i class="fas fa-save"></i>
+                    <span>Данные матча сохранены</span>
+                    <button class="restore-btn" id="restore-data-btn">Восстановить</button>
                 </div>
             </div>
             
@@ -1761,6 +1800,10 @@
             const leagueTypeEl = document.getElementById('league-type');
             const historyListEl = document.getElementById('history-list');
             
+            // Элементы сохранения данных
+            const savedDataNotice = document.getElementById('saved-data-notice');
+            const restoreDataBtn = document.getElementById('restore-data-btn');
+            
             // Элементы модального окна деталей истории
             const historyDetailModal = document.getElementById('history-detail-modal');
             const historyModalClose = document.getElementById('history-modal-close');
@@ -1801,6 +1844,7 @@
             let currentTheme = 'light';
             let lastPrediction = null;
             let activeInput = null;
+            let formData = {};
             
             // Инициализация
             initializeApp();
@@ -1813,6 +1857,7 @@
                         this.classList.add('active');
                         currentLeague = this.getAttribute('data-league');
                         updateLeagueInfo();
+                        saveFormData();
                         autoCalculate();
                     });
                 });
@@ -1822,6 +1867,7 @@
                     betOverBtn.classList.add('active');
                     betUnderBtn.classList.remove('active');
                     currentBetType = 'over';
+                    saveFormData();
                     autoCalculate();
                 });
                 
@@ -1829,6 +1875,7 @@
                     betUnderBtn.classList.add('active');
                     betOverBtn.classList.remove('active');
                     currentBetType = 'under';
+                    saveFormData();
                     autoCalculate();
                 });
                 
@@ -1837,6 +1884,18 @@
                 inputFields.forEach(field => {
                     field.addEventListener('focus', showCustomKeyboard);
                     field.addEventListener('click', showCustomKeyboard);
+                    field.addEventListener('input', function() {
+                        saveFormData();
+                        if (field !== realScore1Input && field !== realScore2Input) {
+                            autoCalculate();
+                        }
+                    });
+                });
+                
+                // Обработчик для селекта периода
+                periodSelect.addEventListener('change', function() {
+                    saveFormData();
+                    autoCalculate();
                 });
                 
                 // Кнопки действий
@@ -1844,13 +1903,14 @@
                 clearBtn.addEventListener('click', clearForm);
                 mlTrainBtn.addEventListener('click', trainMLModel);
                 saveRealScoreBtn.addEventListener('click', saveRealScore);
+                restoreDataBtn.addEventListener('click', restoreFormData);
                 
                 // ML переключатель
                 mlToggle.addEventListener('change', function() {
                     mlData.enabled = this.checked;
                     updateMLStatus();
-                    autoCalculate();
                     saveMLData();
+                    autoCalculate();
                 });
                 
                 // Переключение темы
@@ -1884,6 +1944,7 @@
                 loadHistory();
                 loadMLData();
                 loadTheme();
+                loadFormData();
                 
                 // Первоначальный расчет
                 autoCalculate();
@@ -1998,6 +2059,130 @@
                         document.body.classList.add('bookmaker-theme');
                         bookmakerIcon.style.color = '#ffcc00';
                     }
+                }
+            }
+            
+            function saveFormData() {
+                formData = {
+                    score1: score1Input.value,
+                    score2: score2Input.value,
+                    period: periodSelect.value,
+                    minutes: minutesInput.value,
+                    seconds: secondsInput.value,
+                    lineTotal: lineTotalInput.value,
+                    league: currentLeague,
+                    betType: currentBetType,
+                    realScore1: realScore1Input.value,
+                    realScore2: realScore2Input.value,
+                    timestamp: Date.now()
+                };
+                
+                localStorage.setItem('betAnalyzerFormData', JSON.stringify(formData));
+                
+                // Показываем уведомление о сохраненных данных
+                const hasData = score1Input.value || score2Input.value || minutesInput.value || 
+                               secondsInput.value || lineTotalInput.value;
+                if (hasData) {
+                    savedDataNotice.style.display = 'flex';
+                } else {
+                    savedDataNotice.style.display = 'none';
+                }
+            }
+            
+            function loadFormData() {
+                const savedFormData = localStorage.getItem('betAnalyzerFormData');
+                if (savedFormData) {
+                    formData = JSON.parse(savedFormData);
+                    
+                    // Восстанавливаем данные только если они не старше 24 часов
+                    const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+                    if (formData.timestamp && formData.timestamp > oneDayAgo) {
+                        score1Input.value = formData.score1 || '';
+                        score2Input.value = formData.score2 || '';
+                        periodSelect.value = formData.period || '1';
+                        minutesInput.value = formData.minutes || '';
+                        secondsInput.value = formData.seconds || '';
+                        lineTotalInput.value = formData.lineTotal || '';
+                        realScore1Input.value = formData.realScore1 || '';
+                        realScore2Input.value = formData.realScore2 || '';
+                        
+                        // Восстанавливаем лигу
+                        if (formData.league) {
+                            currentLeague = formData.league;
+                            leagueOptions.forEach(opt => {
+                                opt.classList.remove('active');
+                                if (opt.getAttribute('data-league') === currentLeague) {
+                                    opt.classList.add('active');
+                                }
+                            });
+                            updateLeagueInfo();
+                        }
+                        
+                        // Восстанавливаем тип ставки
+                        if (formData.betType) {
+                            currentBetType = formData.betType;
+                            if (currentBetType === 'over') {
+                                betOverBtn.classList.add('active');
+                                betUnderBtn.classList.remove('active');
+                            } else {
+                                betUnderBtn.classList.add('active');
+                                betOverBtn.classList.remove('active');
+                            }
+                        }
+                        
+                        // Показываем уведомление о восстановленных данных
+                        savedDataNotice.style.display = 'flex';
+                        savedDataNotice.innerHTML = `
+                            <i class="fas fa-history"></i>
+                            <span>Данные матча восстановлены</span>
+                            <button class="restore-btn" id="restore-data-btn">Очистить</button>
+                        `;
+                        
+                        // Обновляем обработчик для кнопки восстановления
+                        document.getElementById('restore-data-btn').addEventListener('click', clearForm);
+                    }
+                }
+            }
+            
+            function restoreFormData() {
+                if (Object.keys(formData).length > 0) {
+                    score1Input.value = formData.score1 || '';
+                    score2Input.value = formData.score2 || '';
+                    periodSelect.value = formData.period || '1';
+                    minutesInput.value = formData.minutes || '';
+                    secondsInput.value = formData.seconds || '';
+                    lineTotalInput.value = formData.lineTotal || '';
+                    
+                    // Восстанавливаем лигу
+                    if (formData.league) {
+                        currentLeague = formData.league;
+                        leagueOptions.forEach(opt => {
+                            opt.classList.remove('active');
+                            if (opt.getAttribute('data-league') === currentLeague) {
+                                opt.classList.add('active');
+                            }
+                        });
+                        updateLeagueInfo();
+                    }
+                    
+                    // Восстанавливаем тип ставки
+                    if (formData.betType) {
+                        currentBetType = formData.betType;
+                        if (currentBetType === 'over') {
+                            betOverBtn.classList.add('active');
+                            betUnderBtn.classList.remove('active');
+                        } else {
+                            betUnderBtn.classList.add('active');
+                            betOverBtn.classList.remove('active');
+                        }
+                    }
+                    
+                    autoCalculate();
+                    
+                    // Скрываем уведомление после восстановления
+                    setTimeout(() => {
+                        savedDataNotice.style.display = 'none';
+                    }, 3000);
                 }
             }
             
@@ -2173,6 +2358,9 @@
                     timestamp: new Date()
                 };
                 
+                // Сохраняем последний прогноз в localStorage
+                localStorage.setItem('betAnalyzerLastPrediction', JSON.stringify(lastPrediction));
+                
                 // Если введен тотал букмекера, рассчитываем рекомендацию
                 if (lineTotal > 0) {
                     const deviation = predictedTotal - lineTotal;
@@ -2229,6 +2417,9 @@
                 
                 // Обновляем детали расчета
                 updateCalculationDetails(score1, score2, period, minutes, seconds);
+                
+                // Сохраняем данные формы
+                saveFormData();
             }
             
             function calculatePredictedTotal(score1, score2, period, minutes, seconds) {
@@ -2354,9 +2545,15 @@
                     return;
                 }
                 
+                // Пытаемся получить последний прогноз из localStorage, если в памяти его нет
                 if (!lastPrediction) {
-                    alert('Сначала выполните расчет прогноза');
-                    return;
+                    const savedLastPrediction = localStorage.getItem('betAnalyzerLastPrediction');
+                    if (savedLastPrediction) {
+                        lastPrediction = JSON.parse(savedLastPrediction);
+                    } else {
+                        alert('Сначала выполните расчет прогноза');
+                        return;
+                    }
                 }
                 
                 const realTotal = realScore1 + realScore2;
@@ -2403,6 +2600,9 @@
                 // Очищаем поля реального счета
                 realScore1Input.value = '';
                 realScore2Input.value = '';
+                
+                // Сохраняем обновленные данные формы
+                saveFormData();
                 
                 alert(`Реальный счет сохранен!\nТочность прогноза: ${predictionAccuracy.toFixed(2)}%\nРекомендация: ${recommendationCorrect ? 'ПРАВИЛЬНАЯ' : 'НЕПРАВИЛЬНАЯ'}`);
             }
@@ -2647,6 +2847,10 @@
                 recommendationAccuracyEl.className = 'feedback-value neutral';
                 predictionErrorEl.textContent = '--';
                 predictionErrorEl.className = 'feedback-value neutral';
+                
+                // Очищаем сохраненные данные формы
+                localStorage.removeItem('betAnalyzerFormData');
+                savedDataNotice.style.display = 'none';
                 
                 // Закрываем клавиатуру если открыта
                 hideCustomKeyboard();
